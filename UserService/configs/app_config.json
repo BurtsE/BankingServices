@@ -1,0 +1,11 @@
+{
+  "port": "8080",
+  "log_level": "info",
+  "postgres": {
+    "host": "user_postgres",
+    "port": "5432",
+    "username": "user_dbuser",
+    "password": "user_dbpass",
+    "database": "user_dbname"
+  }
+}
