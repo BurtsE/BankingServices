@@ -1,0 +1,11 @@
+{
+  "port": "8080",
+  "log_level": "info",
+  "postgres": {
+    "host": "banking_postgres",
+    "port": "5433",
+    "username": "banking_dbuser",
+    "password": "banking_dbpass",
+    "database": "banking_dbname"
+  }
+}
