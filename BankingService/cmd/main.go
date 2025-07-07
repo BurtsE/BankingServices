@@ -31,6 +31,10 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	if cfg.LogLevel == "DEBUG" {
+		logger.SetLevel(logrus.DebugLevel)
+	}
+
 	db, err := postgres.NewPostgresRepository(ctx, cfg)
 	if err != nil {
 		logger.Fatal(err)

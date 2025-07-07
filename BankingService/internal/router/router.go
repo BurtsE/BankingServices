@@ -3,6 +3,7 @@ package router
 import (
 	"BankingService/internal/config"
 	"BankingService/internal/service"
+	"BankingService/pkg/middleware"
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -26,12 +27,22 @@ func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.Bankin
 		muxRouter: mux.NewRouter().PathPrefix("/api/v1").Subrouter(),
 		service:   service,
 	}
+
 	r.srv = &http.Server{
 		Handler:      r.Handler(),
 		Addr:         ":" + cfg.ServerPort,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
+
+	r.muxRouter.HandleFunc("/account", r.createAccountHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/account/deposit", r.depositHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/account/withdraw", r.withdrawHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/account/transfer", r.transferHandler).Methods("POST")
+
+	r.muxRouter.Use(middleware.NewLoggerMiddleware(logger))
+	r.muxRouter.Use(middleware.NewPanicMiddleware(logger))
+
 	return r
 }
 

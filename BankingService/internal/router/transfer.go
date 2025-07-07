@@ -17,7 +17,15 @@ type transferRequest struct {
 func (r *Router) transferHandler(w http.ResponseWriter, req *http.Request) {
 	var reqBody transferRequest
 	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		r.logger.Debugf("transfer: json decode error: %s", err)
+		http.Error(w, errInvalidRequest.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if reqBody.UUID == "" || reqBody.FromAccountID == 0 ||
+		reqBody.ToAccountID == 0 || reqBody.Currency == "" || reqBody.Amount == "" {
+		r.logger.Debugf("transfer: missing parameters: %v", reqBody)
+		http.Error(w, errInvalidRequest.Error(), http.StatusBadRequest)
 		return
 	}
 

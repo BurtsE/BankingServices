@@ -15,7 +15,14 @@ type depositRequest struct {
 func (r *Router) depositHandler(w http.ResponseWriter, req *http.Request) {
 	var reqBody depositRequest
 	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
-		http.Error(w, "Invalid amount", http.StatusBadRequest)
+		r.logger.Debugf("deposit: json decode error: %s", err)
+		http.Error(w, errInvalidRequest.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if reqBody.UUID == "" || reqBody.Amount == "" || reqBody.AccountID == 0 {
+		r.logger.Debugf("deposit: missing parameters: %v", reqBody)
+		http.Error(w, errInvalidRequest.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -31,6 +38,7 @@ func (r *Router) depositHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
