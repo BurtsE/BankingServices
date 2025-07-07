@@ -1,0 +1,11 @@
+{
+  "port": "8080",
+  "log_level": "DEBUG",
+  "redis": {
+    "host": "gateway_redis",
+    "port": "5433",
+    "username": "gateway_dbuser",
+    "password": "gateway_dbpass",
+    "database": 0
+  }
+}
