@@ -35,8 +35,8 @@ func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.UserSe
 	r.muxRouter.HandleFunc("/login", r.loginHandler).Methods("POST")
 	r.muxRouter.HandleFunc("/{id:[0-9]+}", r.getUserByIDHandler).Methods("GET")
 
-	r.muxRouter.Use(middleware.LoggerMiddleware)
-	r.muxRouter.Use(middleware.PanicRecoveryMiddleware)
+	r.muxRouter.Use(middleware.NewLoggerMiddleware(logger))
+	r.muxRouter.Use(middleware.NewPanicMiddleware(logger))
 
 	return r
 }
