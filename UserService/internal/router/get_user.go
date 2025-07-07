@@ -15,7 +15,7 @@ func (r *Router) getUserByIDHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	user, err := r.userService.GetByID(ctx, userID)
+	user, err := r.service.GetByID(ctx, userID)
 	if err != nil {
 		r.logger.WithError(err).Warn("user not found")
 		http.Error(w, "User not found: "+err.Error(), http.StatusNotFound)

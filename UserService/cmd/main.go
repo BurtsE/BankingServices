@@ -8,7 +8,6 @@ import (
 	"context"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,6 +29,12 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	if cfg.LogLevel == "DEBUG" {
+		logger.SetLevel(logrus.DebugLevel)
+	}
+
+	logger.Level = logrus.DebugLevel
+
 	db, err := postgres.NewPostgresRepository(ctx, cfg)
 	if err != nil {
 		logger.Fatal(err)
@@ -48,7 +53,7 @@ func main() {
 
 	errG.Go(func() error {
 		<-gCtx.Done()
-		log.Println("closing database...")
+		logger.Println("closing database...")
 		if db != nil {
 			db.Close()
 		}
@@ -56,7 +61,7 @@ func main() {
 	})
 
 	if err = errG.Wait(); err != nil {
-		log.Printf("exit reason: %s \n", err)
+		logger.Printf("exit reason: %s \n", err)
 	}
-	log.Println("app shutdown")
+	logger.Println("app shutdown")
 }

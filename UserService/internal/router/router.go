@@ -3,6 +3,7 @@ package router
 import (
 	"UserService/internal/config"
 	"UserService/internal/service"
+	"UserService/pkg/middleware"
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -17,10 +18,9 @@ type Router struct {
 	srv       *http.Server
 }
 
-// NewRouter — конструктор роутера
 func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.UserService) *Router {
 	r := &Router{
-		muxRouter: mux.NewRouter().PathPrefix("/api/v1").Subrouter(),
+		muxRouter: mux.NewRouter().PathPrefix("/api/v1/user").Subrouter(),
 		logger:    logger,
 		service:   service,
 	}
@@ -30,6 +30,14 @@ func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.UserSe
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
+
+	r.muxRouter.HandleFunc("/register", r.registerUserHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/login", r.loginHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/{id:[0-9]+}", r.getUserByIDHandler).Methods("GET")
+
+	r.muxRouter.Use(middleware.LoggerMiddleware)
+	r.muxRouter.Use(middleware.PanicRecoveryMiddleware)
+
 	return r
 }
 

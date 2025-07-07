@@ -13,11 +13,19 @@ type loginRequest struct {
 func (r *Router) loginHandler(w http.ResponseWriter, req *http.Request) {
 	var reqBody loginRequest
 	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
+		r.logger.Debugf("cannot decode request body: %v", err)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+
+	if reqBody.Email == "" || reqBody.Password == "" {
+		r.logger.Debugf("insufficient request body: %v", reqBody)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
 	ctx := req.Context()
-	jwtToken, expiresAt, err := r.userService.Authenticate(ctx, reqBody.Email, reqBody.Password)
+	jwtToken, expiresAt, err := r.service.Authenticate(ctx, reqBody.Email, reqBody.Password)
 	if err != nil {
 		r.logger.WithError(err).Warn("failed to authenticate user")
 		http.Error(w, "Authentication failed: "+err.Error(), http.StatusUnauthorized)
