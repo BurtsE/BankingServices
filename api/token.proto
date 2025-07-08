@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "banking_app/generated/protobuf;protobuf";
+
+service UserService {
+  rpc ValidateJWT(ValidateRequest) returns (ValidateResponse);
+}
+
+message ValidateRequest {
+    string token = 1;
+}
+
+message ValidateResponse {
+    string uuid = 1;
+}
