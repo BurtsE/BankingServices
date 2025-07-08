@@ -3,7 +3,7 @@
   "log_level": "DEBUG",
   "redis": {
     "host": "gateway_redis",
-    "port": "5433",
+    "port": "6379",
     "username": "gateway_dbuser",
     "password": "gateway_dbpass",
     "database": 0

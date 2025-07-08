@@ -8,12 +8,12 @@ import (
 )
 
 func insertIDToRequestBody(r *http.Request, uuid string) error {
-	defer r.Body.Close()
-
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
+
+	defer r.Body.Close()
 
 	newBody := map[string]interface{}{}
 	err = json.Unmarshal(body, &newBody)
@@ -23,6 +23,13 @@ func insertIDToRequestBody(r *http.Request, uuid string) error {
 
 	newBody["uuid"] = uuid
 
-	r.Body = io.NopCloser(bytes.NewBuffer(body))
+	modifiedBody, err := json.Marshal(newBody)
+	if err != nil {
+		return err
+	}
+
+	r.Body = io.NopCloser(bytes.NewBuffer(modifiedBody))
+	r.ContentLength = int64(len(modifiedBody))
+	
 	return nil
 }

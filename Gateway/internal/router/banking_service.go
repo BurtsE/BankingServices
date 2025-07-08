@@ -21,8 +21,14 @@ func (r *Router) BankingServiceHandler(w http.ResponseWriter, req *http.Request)
 	if uuid, ok, err = r.tokenCache.Get(req.Context(), jwt); err != nil {
 		r.logger.Errorf("Error getting token from cache: %v", err)
 	}
+	if err != nil {
+		r.logger.Debugf("Error getting token from cache: %v", err)
+		http.Error(w, "Unauthorized", http.StatusInternalServerError)
+		return
+	}
 
 	if !ok {
+		r.logger.Debugf("No token in cache: %v", jwt)
 		uuid, err = r.userService.Validate(jwt)
 		if err != nil {
 			r.logger.Debugf("Error validating token: %v", err)
@@ -30,9 +36,10 @@ func (r *Router) BankingServiceHandler(w http.ResponseWriter, req *http.Request)
 			return
 		}
 
+		r.logger.Debugf("caching token: %v", jwt)
 		err = r.tokenCache.Save(req.Context(), jwt, uuid, caching_duration)
 		if err != nil {
-			r.logger.Errorf("Error saving token: %v", err)
+			r.logger.Debugf("Error saving token: %v", err)
 		}
 	}
 

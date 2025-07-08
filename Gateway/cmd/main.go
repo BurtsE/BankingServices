@@ -2,12 +2,16 @@ package main
 
 import (
 	"context"
+	"gateway/generated/protobuf"
 	"gateway/internal/cache/redis"
 	"gateway/internal/config"
 	"gateway/internal/router"
 	"gateway/internal/service/user_service"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"log"
 	"os"
 	"os/signal"
 
@@ -15,6 +19,8 @@ import (
 )
 
 func main() {
+
+	// context for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		c := make(chan os.Signal, 1)
@@ -23,6 +29,7 @@ func main() {
 		cancel()
 	}()
 
+	// initiating configuration for the app
 	logger := logrus.New()
 
 	cfg, err := config.InitConfig()
@@ -34,13 +41,25 @@ func main() {
 		logger.SetLevel(logrus.DebugLevel)
 	}
 
-	cache := redis.NewRedisCache(cfg)
+	// connecting to redis
+	logger.Printf("connecting to redis with address %s:%s", cfg.Redis.Host, cfg.Redis.Port)
+	cache, err := redis.NewRedisCache(cfg)
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	userService := &user_service.UserService{}
+	// initializing grpc client
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(config.GetUserServiceGrpcURI(), opts...)
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
 
+	client := protobuf.NewUserServiceClient(conn)
+	userService := user_service.NewUserService(client)
+
+	// initializing http router
 	rtr := router.NewRouter(cfg, logger, cache, userService)
 
 	errG, gCtx := errgroup.WithContext(ctx)
@@ -48,6 +67,19 @@ func main() {
 	errG.Go(func() error {
 		logger.Printf("starting server on port: %s", cfg.ServerPort)
 		return rtr.Start()
+	})
+
+	// clearing resources
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("closing grpc connection...")
+		return conn.Close()
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("closing http client...")
+		return rtr.Stop(gCtx)
 	})
 
 	errG.Go(func() error {

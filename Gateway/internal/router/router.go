@@ -20,7 +20,7 @@ const caching_duration = time.Hour * 1
 
 const (
 	user_prefix    = "user"
-	banking_prefix = "banking"
+	banking_prefix = "account"
 )
 
 type Router struct {
@@ -73,7 +73,7 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 func (r *Router) InitServiceMapping() {
 	r.mapping = make(map[string]*url.URL)
 
-	uri, err := url.Parse(config.GetUserServiceURI())
+	uri, err := url.Parse(config.GetUserServiceHttpURI())
 	if err != nil {
 		r.logger.Fatal(err)
 	}

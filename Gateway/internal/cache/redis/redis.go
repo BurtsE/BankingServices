@@ -16,22 +16,29 @@ type Redis struct {
 	client *redis.Client
 }
 
-func NewRedisCache(cfg *config.Config) *Redis {
+func NewRedisCache(cfg *config.Config) (*Redis, error) {
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
-		Password: cfg.Redis.Password,
-		DB:       cfg.Redis.Database,
+		Addr: fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
+		//Password: cfg.Redis.Password,
+		//DB:       cfg.Redis.Database,
 	})
-	return &Redis{client: rdb}
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+		return nil, err
+	}
+
+	return &Redis{client: rdb}, nil
 }
 
 func (r *Redis) Get(ctx context.Context, token string) (string, bool, error) {
 	uuid, err := r.client.Get(ctx, token).Result()
-	if !errors.Is(err, redis.Nil) {
+	if errors.Is(err, redis.Nil) {
 		return "", false, nil
-	} else if err != nil {
+	}
+	if err != nil {
 		return "", false, err
 	}
+	
 	return uuid, true, nil
 }
 

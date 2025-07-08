@@ -32,8 +32,12 @@ func InitConfig() (*Config, error) {
 	return c, nil
 }
 
-func GetUserServiceURI() string {
-	return getEnv("USER_SERVICE_URI")
+func GetUserServiceHttpURI() string {
+	return getEnv("USER_SERVICE_HTTP_URI")
+}
+
+func GetUserServiceGrpcURI() string {
+	return getEnv("USER_SERVICE_GRPC_URI")
 }
 
 func GetBankingServiceURI() string {
