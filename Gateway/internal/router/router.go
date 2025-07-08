@@ -61,6 +61,7 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 	rtr.InitServiceMapping()
 
 	rtr.muxRouter.HandleFunc("/user/{*}", rtr.proxy.ServeHTTP)
+	rtr.muxRouter.HandleFunc("/account/{*}", rtr.BankingServiceHandler).Methods("GET", "POST")
 	rtr.muxRouter.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) }))
 
 	rtr.muxRouter.Use(middleware.NewLoggerMiddleware(logger))
