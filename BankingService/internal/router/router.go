@@ -24,7 +24,7 @@ type Router struct {
 func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.BankingService) *Router {
 	r := &Router{
 		logger:    logger,
-		muxRouter: mux.NewRouter().PathPrefix("/api/v1").Subrouter(),
+		muxRouter: mux.NewRouter().PathPrefix("/api/v1/account").Subrouter(),
 		service:   service,
 	}
 
@@ -35,10 +35,10 @@ func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.Bankin
 		ReadTimeout:  15 * time.Second,
 	}
 
-	r.muxRouter.HandleFunc("/account", r.createAccountHandler).Methods("POST")
-	r.muxRouter.HandleFunc("/account/deposit", r.depositHandler).Methods("POST")
-	r.muxRouter.HandleFunc("/account/withdraw", r.withdrawHandler).Methods("POST")
-	r.muxRouter.HandleFunc("/account/transfer", r.transferHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/create", r.createAccountHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/deposit", r.depositHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/withdraw", r.withdrawHandler).Methods("POST")
+	r.muxRouter.HandleFunc("/transfer", r.transferHandler).Methods("POST")
 
 	r.muxRouter.Use(middleware.NewLoggerMiddleware(logger))
 	r.muxRouter.Use(middleware.NewPanicMiddleware(logger))
