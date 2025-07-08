@@ -1,5 +1,6 @@
 {
-  "port": "8080",
+  "http_port": "8080",
+  "grpc_port": 80,
   "log_level": "DEBUG",
   "postgres": {
     "host": "user_postgres",

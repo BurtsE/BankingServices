@@ -2,7 +2,8 @@ package main
 
 import (
 	"UserService/internal/config"
-	"UserService/internal/router"
+	"UserService/internal/server/grpc_server"
+	"UserService/internal/server/http_router"
 	"UserService/internal/service"
 	"UserService/internal/storage/postgres"
 	"context"
@@ -33,8 +34,6 @@ func main() {
 		logger.SetLevel(logrus.DebugLevel)
 	}
 
-	logger.Level = logrus.DebugLevel
-
 	db, err := postgres.NewPostgresRepository(ctx, cfg)
 	if err != nil {
 		logger.Fatal(err)
@@ -42,13 +41,19 @@ func main() {
 
 	s := service.NewUserService(db, cfg)
 
-	rtr := router.NewRouter(logger, cfg, s)
+	httpRouter := http_router.NewRouter(logger, cfg, s)
+	grpcServer := grpc_server.NewGrpcServer(logger, cfg, s)
 
 	errG, gCtx := errgroup.WithContext(ctx)
 
 	errG.Go(func() error {
-		logger.Printf("starting server on port: %s", cfg.ServerPort)
-		return rtr.Start()
+		logger.Printf("starting grpc server on port: %d", cfg.GrpcPort)
+		return grpcServer.Start()
+	})
+
+	errG.Go(func() error {
+		logger.Printf("starting http server on port: %s", cfg.ServerPort)
+		return httpRouter.Start()
 	})
 
 	errG.Go(func() error {

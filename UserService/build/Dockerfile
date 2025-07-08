@@ -8,6 +8,8 @@ RUN go mod download
 COPY cmd cmd
 COPY internal internal
 COPY pkg pkg
+COPY generated generated
+
 
 RUN GOOS=linux go build -o user_service ./cmd
 

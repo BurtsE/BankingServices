@@ -1,4 +1,4 @@
-package router
+package http_router
 
 import (
 	"UserService/internal/config"
@@ -21,7 +21,7 @@ type Router struct {
 func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.UserService) *Router {
 	r := &Router{
 		muxRouter: mux.NewRouter().PathPrefix("/api/v1/user").Subrouter(),
-		logger:    logger,
+		logger:    logger.WithField("server", "http").Logger,
 		service:   service,
 	}
 	r.srv = &http.Server{
