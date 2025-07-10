@@ -31,7 +31,7 @@ func (r *Router) BankingServiceHandler(w http.ResponseWriter, req *http.Request)
 		r.logger.Debugf("No token in cache: %v", jwt)
 		uuid, err = r.userService.Validate(jwt)
 		if err != nil {
-			r.logger.Debugf("Error validating token: %v", err)
+			r.logger.Errorf("Error validating token: %v", err)
 			http.Error(w, "Unauthorized: "+err.Error(), http.StatusUnauthorized)
 			return
 		}

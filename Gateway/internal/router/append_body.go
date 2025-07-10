@@ -21,7 +21,7 @@ func insertIDToRequestBody(r *http.Request, uuid string) error {
 		return err
 	}
 
-	newBody["uuid"] = uuid
+	newBody["user_id"] = uuid
 
 	modifiedBody, err := json.Marshal(newBody)
 	if err != nil {
@@ -30,6 +30,6 @@ func insertIDToRequestBody(r *http.Request, uuid string) error {
 
 	r.Body = io.NopCloser(bytes.NewBuffer(modifiedBody))
 	r.ContentLength = int64(len(modifiedBody))
-	
+
 	return nil
 }
