@@ -7,10 +7,9 @@ import (
 )
 
 type transferRequest struct {
-	UUID          string `json:"uuid"`
-	FromAccountID int64  `json:"from_account_id"`
-	ToAccountID   int64  `json:"to_account_id"`
-	Currency      string `json:"currency"`
+	UserID        string `json:"user_id"`
+	FromAccountID string `json:"from_account_id"`
+	ToAccountID   string `json:"to_account_id"`
 	Amount        string `json:"amount"`
 }
 
@@ -22,8 +21,8 @@ func (r *Router) transferHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if reqBody.UUID == "" || reqBody.FromAccountID == 0 ||
-		reqBody.ToAccountID == 0 || reqBody.Currency == "" || reqBody.Amount == "" {
+	if reqBody.UserID == "" || reqBody.FromAccountID == "" ||
+		reqBody.ToAccountID == "" || reqBody.Amount == "" {
 		r.logger.Debugf("transfer: missing parameters: %v", reqBody)
 		http.Error(w, errInvalidRequest.Error(), http.StatusBadRequest)
 		return
@@ -35,16 +34,18 @@ func (r *Router) transferHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	account, err := r.service.GetAccountByID(context.Background(), reqBody.FromAccountID)
-	if err != nil || account.UserID != reqBody.UUID {
+	if err != nil || account.UserID != reqBody.UserID {
 		r.logger.WithError(err).Error("failed to get account")
 		http.Error(w, "Could not get account", http.StatusBadRequest)
 		return
 	}
+
 	if err = r.service.Transfer(req.Context(), reqBody.FromAccountID, reqBody.ToAccountID, reqBody.Amount); err != nil {
 		r.logger.WithError(err).Error("Transfer failed")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }

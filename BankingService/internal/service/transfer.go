@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
-func (s *Service) Transfer(ctx context.Context, fromAccountID, toAccountID int64, amount string) error {
+func (s *Service) Transfer(ctx context.Context, fromAccountID, toAccountID string, amount string) error {
 
 	if fromAccountID == toAccountID {
 		return errors.New("cannot transfer to the same account")
@@ -22,12 +23,22 @@ func (s *Service) Transfer(ctx context.Context, fromAccountID, toAccountID int64
 		return errors.New("amount must be positive")
 	}
 
-	from, err := s.storage.GetAccountByID(ctx, fromAccountID)
+	fromAccountUUID, err := uuid.Parse(fromAccountID)
+	if err != nil {
+		return fmt.Errorf("could not parse account ID %s: %w", fromAccountID, err)
+	}
+
+	from, err := s.storage.GetAccountByID(ctx, fromAccountUUID)
 	if err != nil {
 		return err
 	}
 
-	to, err := s.storage.GetAccountByID(ctx, toAccountID)
+	toAccountUUID, err := uuid.Parse(toAccountID)
+	if err != nil {
+		return fmt.Errorf("could not parse account ID %s: %w", toAccountID, err)
+	}
+
+	to, err := s.storage.GetAccountByID(ctx, toAccountUUID)
 	if err != nil {
 		return err
 	}

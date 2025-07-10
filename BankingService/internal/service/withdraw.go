@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
-func (s *Service) Withdraw(ctx context.Context, accountID int64, amount string) error {
+func (s *Service) Withdraw(ctx context.Context, accountID string, amount string) error {
 
 	value, err := decimal.NewFromString(amount)
 	if err != nil {
@@ -18,7 +19,12 @@ func (s *Service) Withdraw(ctx context.Context, accountID int64, amount string) 
 		return errors.New("amount must be positive")
 	}
 
-	account, err := s.storage.GetAccountByID(ctx, accountID)
+	accountUUID, err := uuid.Parse(accountID)
+	if err != nil {
+		return fmt.Errorf("could not parse account ID %s: %w", accountID, err)
+	}
+
+	account, err := s.storage.GetAccountByID(ctx, accountUUID)
 	if err != nil {
 		return err
 	}

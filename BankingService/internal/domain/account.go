@@ -2,19 +2,23 @@ package domain
 
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"time"
 )
 
-// Account — банковский счет пользователя
+// Account — user's bank account
 type Account struct {
-	ID        int64           `json:"id"`
-	UserID    string          `json:"user_id"`
-	Number    string          `json:"number"`
-	Currency  string          `json:"currency"`
-	Balance   decimal.Decimal `json:"balance"`
-	CreatedAt time.Time       `json:"created_at"`
-	IsActive  bool            `json:"is_active"`
+	ID             int64
+	UUID           uuid.UUID       `json:"uuid"`
+	UserID         string          `json:"user_id"`
+	AccountType    AccountType     `json:"-"`
+	AccountSubType AccountSubType  `json:"-"`
+	Number         string          `json:"number"`
+	Currency       Currency        `json:"currency"`
+	Balance        decimal.Decimal `json:"balance"`
+	CreatedAt      time.Time       `json:"created_at"`
+	IsActive       bool            `json:"is_active"`
 }
 
 func (a Account) MarshalBinary() ([]byte, error) {

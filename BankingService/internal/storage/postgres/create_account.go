@@ -1,28 +1,32 @@
 package postgres
 
 import (
-	model "BankingService/internal/domain"
+	"BankingService/internal/domain"
 	"context"
 	"fmt"
 )
 
-func (p *PostgresRepository) CreateAccount(ctx context.Context, userID string, currency string) (*model.Account, error) {
+func (p *PostgresRepository) CreateAccount(ctx context.Context, account *domain.Account) (int64, error) {
 	query := `
 		INSERT INTO 
-			accounts (user_id, currency, balance)
-			VALUES ($1, $2, 0.0)
-		RETURNING id, user_id, currency, balance, is_active
+			accounts (uuid, user_id, number, currency, balance, created_at, is_active)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id
 	`
-	var acc model.Account
-	err := p.pool.QueryRow(ctx, query, userID, currency).Scan(
-		&acc.ID,
-		&acc.UserID,
-		&acc.Currency,
-		&acc.Balance,
-		&acc.IsActive,
-	)
+	currency := account.Currency.String()
+	var id int64
+	err := p.pool.QueryRow(ctx, query,
+		&account.UUID,
+		&account.UserID,
+		&account.Number,
+		&currency,
+		&account.Balance,
+		&account.CreatedAt,
+		&account.IsActive,
+	).Scan(&id)
 	if err != nil {
-		return nil, fmt.Errorf("CreateAccount: %w", err)
+		return 0, fmt.Errorf("CreateAccount: %w", err)
 	}
-	return &acc, nil
+
+	return id, nil
 }

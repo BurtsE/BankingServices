@@ -1,9 +1,11 @@
 
-CREATE TYPE currency_type AS ENUM ('rub', 'usd');
+CREATE TYPE currency_type AS ENUM ('RUB', 'USD');
 
 CREATE TABLE IF NOT EXISTS accounts (
     id BIGSERIAL PRIMARY KEY,
+    uuid UUID NOT NULL UNIQUE,
     user_id VARCHAR(256) NOT NULL,
+    number VARCHAR(32) NOT NULL,
     balance NUMERIC(18,4) NOT NULL DEFAULT 0,
     currency currency_type NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -12,7 +14,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 
 CREATE TABLE IF NOT EXISTS transactions (
     id BIGSERIAL PRIMARY KEY,
-    account_id BIGINT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    account_id BIGSERIAL NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     amount NUMERIC(18,4) NOT NULL,
     currency currency_type NOT NULL,
     type VARCHAR(32) NOT NULL,     -- deposit, withdraw, transfer, payment, etc.

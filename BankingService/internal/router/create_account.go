@@ -6,8 +6,10 @@ import (
 )
 
 type createAccountRequest struct {
-	UUID     string `json:"uuid"`
-	Currency string `json:"currency"`
+	UserID         string `json:"user_id"`
+	AccountType    string `json:"account_type"`
+	AccountSubType string `json:"account_subtype"`
+	Currency       string `json:"currency"`
 }
 
 func (r *Router) createAccountHandler(w http.ResponseWriter, req *http.Request) {
@@ -18,21 +20,19 @@ func (r *Router) createAccountHandler(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	if reqBody.UUID == "" || reqBody.Currency == "" {
+	if reqBody.UserID == "" || reqBody.Currency == "" ||
+		reqBody.AccountType == "" || reqBody.AccountSubType == "" {
 		r.logger.Debugf("createAccount: missing parameters: %v", reqBody)
 		http.Error(w, errInvalidRequest.Error(), http.StatusBadRequest)
 		return
 	}
 
-	switch reqBody.Currency {
-	case "usd":
-	case "rub":
-	default:
-		http.Error(w, "Invalid currency", http.StatusBadRequest)
-		return
-	}
-
-	account, err := r.service.CreateAccount(req.Context(), reqBody.UUID, reqBody.Currency)
+	account, err := r.service.CreateAccount(req.Context(),
+		reqBody.UserID,
+		reqBody.Currency,
+		reqBody.AccountType,
+		reqBody.AccountSubType,
+	)
 	if err != nil {
 		r.logger.WithError(err).Error("account creation fail")
 		http.Error(w, err.Error(), http.StatusBadRequest)

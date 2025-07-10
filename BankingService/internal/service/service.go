@@ -4,15 +4,23 @@ import (
 	"BankingService/internal/domain"
 	"BankingService/internal/storage"
 	"context"
+	"fmt"
+	"github.com/google/uuid"
 )
 
 type BankingService interface {
-	CreateAccount(ctx context.Context, userID string, currency string) (*domain.Account, error)
-	Deposit(ctx context.Context, accountID int64, amount string) error
-	Withdraw(ctx context.Context, accountID int64, amount string) error
-	Transfer(ctx context.Context, fromAccountID, toAccountID int64, amount string) error
+	CreateAccount(ctx context.Context, userID string,
+		currencyStr, accountTypeStr, accountSubTypeStr string) (*domain.Account, error)
+
+	Deposit(ctx context.Context, accountID string, amount string) error
+
+	Withdraw(ctx context.Context, accountID string, amount string) error
+
+	Transfer(ctx context.Context, fromAccountID, toAccountID string, amount string) error
+
 	//GetAccountsByUser(ctx context.Context, userID string) ([]*domain.Account, error)
-	GetAccountByID(ctx context.Context, accountID int64) (*domain.Account, error)
+
+	GetAccountByID(ctx context.Context, accountID string) (*domain.Account, error)
 }
 
 var _ BankingService = (*Service)(nil)
@@ -29,6 +37,11 @@ func (s *Service) GetAccountsByUser(ctx context.Context, userID string) ([]*doma
 	return s.storage.GetAccountsByUser(ctx, userID)
 }
 
-func (s *Service) GetAccountByID(ctx context.Context, accountID int64) (*domain.Account, error) {
-	return s.storage.GetAccountByID(ctx, accountID)
+func (s *Service) GetAccountByID(ctx context.Context, accountID string) (*domain.Account, error) {
+	accountUUID, err := uuid.Parse(accountID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse account ID %s: %w", accountID, err)
+	}
+
+	return s.storage.GetAccountByID(ctx, accountUUID)
 }

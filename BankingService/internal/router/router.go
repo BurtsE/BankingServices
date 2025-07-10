@@ -5,11 +5,9 @@ import (
 	"BankingService/internal/service"
 	"BankingService/pkg/middleware"
 	"context"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -56,17 +54,4 @@ func (r *Router) Start() error {
 
 func (r *Router) Stop(ctx context.Context) error {
 	return r.srv.Shutdown(ctx)
-}
-
-func GetAccountIDFromURI(r *http.Request) (int64, error) {
-	vars := mux.Vars(r)
-	accountIDStr := vars["id"]
-	if accountIDStr == "" {
-		return 0, fmt.Errorf(" missing account id")
-	}
-	accountID, err := strconv.ParseInt(accountIDStr, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf(" could not parce account id")
-	}
-	return accountID, nil
 }
