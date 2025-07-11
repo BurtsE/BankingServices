@@ -19,7 +19,7 @@ func NewMetrics(reg prometheus.Registerer) *Metrics {
 				Name:    "request_duration_seconds",
 				Buckets: []float64{0.05, 0.1, 0.2, 0.5},
 			},
-			[]string{}),
+			[]string{"service"}),
 	}
 
 	reg.MustRegister(m.Requests)

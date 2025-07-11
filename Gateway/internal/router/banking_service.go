@@ -2,10 +2,17 @@ package router
 
 import (
 	"net/http"
+	"time"
 )
 
+const BANKING_LABEL = "banking"
+
 func (r *Router) BankingServiceHandler(w http.ResponseWriter, req *http.Request) {
-	r.metrics.Requests.WithLabelValues("banking").Inc()
+	start := time.Now()
+	defer func() {
+		r.metrics.Duration.WithLabelValues(BANKING_LABEL).Observe(time.Since(start).Seconds())
+	}()
+	r.metrics.Requests.WithLabelValues(BANKING_LABEL).Inc()
 
 	jwt, err := extractJWTFromHeader(req)
 	if err != nil {
