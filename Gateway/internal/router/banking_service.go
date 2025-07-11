@@ -5,6 +5,7 @@ import (
 )
 
 func (r *Router) BankingServiceHandler(w http.ResponseWriter, req *http.Request) {
+	r.metrics.Requests.WithLabelValues("banking").Inc()
 
 	jwt, err := extractJWTFromHeader(req)
 	if err != nil {
@@ -43,7 +44,7 @@ func (r *Router) BankingServiceHandler(w http.ResponseWriter, req *http.Request)
 		}
 	}
 
-	err = insertIDToRequestBody(req, uuid)
+	err = insertUserIDToRequestBody(req, uuid)
 	if err != nil {
 		r.logger.Debugf("Error saving token: %v", err)
 		http.Error(w, "Unauthorized: "+err.Error(), http.StatusInternalServerError)

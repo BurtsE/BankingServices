@@ -5,8 +5,11 @@ import (
 	"gateway/generated/protobuf"
 	"gateway/internal/cache/redis"
 	"gateway/internal/config"
+	"gateway/internal/metrics_server"
 	"gateway/internal/router"
 	"gateway/internal/service/user_service"
+	"gateway/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -59,14 +62,26 @@ func main() {
 	client := protobuf.NewUserServiceClient(conn)
 	userService := user_service.NewUserService(client)
 
+	// Init prometheus metric registry
+	registry := prometheus.NewRegistry()
+	m := metrics.NewMetrics(registry)
+
 	// initializing http router
-	rtr := router.NewRouter(cfg, logger, cache, userService)
+	rtr := router.NewRouter(cfg, logger, cache, userService, m)
+
+	// initializing metric routes
+	metricServer := metrics_server.NewMetricsServer(registry)
 
 	errG, gCtx := errgroup.WithContext(ctx)
 
 	errG.Go(func() error {
-		logger.Printf("starting server on port: %s", cfg.ServerPort)
+		logger.Printf("starting http server on port: %s", cfg.ServerPort)
 		return rtr.Start()
+	})
+
+	errG.Go(func() error {
+		logger.Printf("starting metric server on port: %s", config.GetPrometheusPort())
+		return metricServer.Start()
 	})
 
 	// clearing resources
@@ -80,6 +95,12 @@ func main() {
 		<-gCtx.Done()
 		logger.Println("closing http client...")
 		return rtr.Stop(gCtx)
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("closing metric server...")
+		return metricServer.Stop(gCtx)
 	})
 
 	errG.Go(func() error {

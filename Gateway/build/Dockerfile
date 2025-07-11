@@ -20,5 +20,6 @@ COPY --from=builder /app/gateway .
 ADD configs/app_config.json configs/app_config.json
 
 EXPOSE 8080
+EXPOSE 8081
 
 CMD ["./gateway"]

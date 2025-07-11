@@ -5,6 +5,7 @@ import (
 	"gateway/internal/cache"
 	"gateway/internal/config"
 	"gateway/internal/service"
+	"gateway/pkg/metrics"
 	"gateway/pkg/middleware"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -24,27 +25,29 @@ const (
 )
 
 type Router struct {
-	logger    *logrus.Logger
-	muxRouter *mux.Router
-	proxy     *httputil.ReverseProxy
-	srv       *http.Server
+	logger *logrus.Logger
+	proxy  *httputil.ReverseProxy
+	srv    *http.Server
 
 	userService service.IUserService
 	mapping     map[string]*url.URL
 	tokenCache  cache.Cache
+	metrics     *metrics.Metrics
 }
 
-func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, userService service.IUserService) *Router {
+func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, userService service.IUserService,
+	metrics *metrics.Metrics) *Router {
 
 	rtr := &Router{
-		muxRouter:   mux.NewRouter().PathPrefix(ROUTER_PREFIX).Subrouter(),
 		logger:      logger,
 		tokenCache:  cache,
 		userService: userService,
 	}
 
+	muxRouter := mux.NewRouter().PathPrefix(ROUTER_PREFIX).Subrouter()
+
 	rtr.srv = &http.Server{
-		Handler:      rtr.Handler(),
+		Handler:      muxRouter,
 		Addr:         ":" + cfg.ServerPort,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -57,15 +60,19 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 	}
 
 	rtr.proxy = proxy
-
 	rtr.InitServiceMapping()
 
-	rtr.muxRouter.HandleFunc("/user/{*}", rtr.proxy.ServeHTTP)
-	rtr.muxRouter.HandleFunc("/account/{*}", rtr.BankingServiceHandler).Methods("GET", "POST")
-	rtr.muxRouter.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) }))
+	// Setup prometheus metrics
+	rtr.metrics = metrics
 
-	rtr.muxRouter.Use(middleware.NewLoggerMiddleware(logger))
-	rtr.muxRouter.Use(middleware.NewPanicMiddleware(logger))
+	// register proxy handlers
+	muxRouter.HandleFunc("/user/{*}", rtr.UserServiceHandler)
+	muxRouter.HandleFunc("/account/{*}", rtr.BankingServiceHandler).Methods("GET", "POST")
+	muxRouter.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) }))
+
+	// add middleware
+	muxRouter.Use(middleware.NewLoggerMiddleware(logger))
+	muxRouter.Use(middleware.NewPanicMiddleware(logger))
 
 	return rtr
 }
@@ -92,8 +99,4 @@ func (r *Router) Start() error {
 
 func (r *Router) Stop(ctx context.Context) error {
 	return r.srv.Shutdown(ctx)
-}
-
-func (r *Router) Handler() http.Handler {
-	return r.muxRouter
 }

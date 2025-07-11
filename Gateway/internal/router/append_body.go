@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func insertIDToRequestBody(r *http.Request, uuid string) error {
+func insertUserIDToRequestBody(r *http.Request, uuid string) error {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
