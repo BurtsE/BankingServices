@@ -2,7 +2,8 @@ package main
 
 import (
 	"BankingService/internal/config"
-	"BankingService/internal/router"
+	"BankingService/internal/servers/grpc_server"
+	"BankingService/internal/servers/http_router"
 	"BankingService/internal/service"
 	"BankingService/internal/storage/postgres"
 	"context"
@@ -42,13 +43,37 @@ func main() {
 
 	s := service.NewBankingService(db)
 
-	rtr := router.NewRouter(logger, cfg, s)
+	httpRouter := http_router.NewRouter(logger, cfg, s)
+	grpcServer := grpc_server.NewGrpcServer(logger, cfg, s)
 
 	errG, gCtx := errgroup.WithContext(ctx)
 
 	errG.Go(func() error {
-		logger.Printf("starting server on port: %s", cfg.ServerPort)
-		return rtr.Start()
+		logger.Printf("starting grpc server on port: %d", cfg.GRPCPort)
+		return grpcServer.Start()
+	})
+
+	errG.Go(func() error {
+		logger.Printf("starting http server on port: %s", cfg.ServerPort)
+		return httpRouter.Start()
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("stopping http server...")
+		return httpRouter.Stop(gCtx)
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("stopping grpc server...")
+		return grpcServer.Stop()
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("stopping grpc server...")
+		return grpcServer.Stop()
 	})
 
 	errG.Go(func() error {

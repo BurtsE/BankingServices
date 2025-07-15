@@ -1,4 +1,4 @@
-package router
+package http_router
 
 import (
 	"BankingService/internal/config"
@@ -21,7 +21,7 @@ type Router struct {
 // NewRouter — конструктор роутера
 func NewRouter(logger *logrus.Logger, cfg *config.Config, service service.BankingService) *Router {
 	r := &Router{
-		logger:    logger,
+		logger:    logger.WithField("server", "http").Logger,
 		muxRouter: mux.NewRouter().PathPrefix("/api/v1/account").Subrouter(),
 		service:   service,
 	}

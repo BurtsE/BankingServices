@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	ServerPort string `json:"port" yaml:"port"`
+	ServerPort string `json:"port" yaml:"http_port"`
+	GRPCPort   int    `json:"grpc_port" yaml:"grpc_port"`
 	JWTSecret  string `json:"jwt_secret" yaml:"jwt_secret"`
 	LogLevel   string `json:"log_level" yaml:"log_level"`
 	Postgres   `json:"postgres" yaml:"postgres"`
@@ -34,8 +35,8 @@ func InitConfig() (*Config, error) {
 	return c, nil
 }
 
-func GetJWTSecretKey() string {
-	return getEnv("JWT_SECRET_KEY")
+func GetEnv() string {
+	return getEnv("ENV")
 }
 
 func getEnv(param string) string {
