@@ -22,6 +22,7 @@ const caching_duration = time.Hour * 1
 const (
 	user_prefix    = "user"
 	banking_prefix = "account"
+	cards_prefix   = "card"
 )
 
 type Router struct {
@@ -68,6 +69,7 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 	// register proxy handlers
 	muxRouter.HandleFunc("/user/{*}", rtr.UserServiceHandler)
 	muxRouter.HandleFunc("/account/{*}", rtr.BankingServiceHandler).Methods("GET", "POST")
+	muxRouter.HandleFunc("/card/{*}", rtr.BankingServiceHandler).Methods("GET", "POST")
 	muxRouter.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) }))
 
 	// add middleware
@@ -91,6 +93,12 @@ func (r *Router) InitServiceMapping() {
 		r.logger.Fatal(err)
 	}
 	r.mapping[banking_prefix] = uri
+
+	uri, err = url.Parse(config.GetCardServiceURI())
+	if err != nil {
+		r.logger.Fatal(err)
+	}
+	r.mapping[cards_prefix] = uri
 }
 
 func (r *Router) Start() error {

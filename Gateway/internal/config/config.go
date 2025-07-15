@@ -44,6 +44,10 @@ func GetBankingServiceURI() string {
 	return getEnv("BANKING_SERVICE_URI")
 }
 
+func GetCardServiceURI() string {
+	return getEnv("CARD_SERVICE_URI")
+}
+
 func GetPrometheusPort() string {
 	return getEnv("PROMETHEUS_PORT")
 }
