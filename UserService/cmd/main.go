@@ -2,8 +2,8 @@ package main
 
 import (
 	"UserService/internal/config"
-	"UserService/internal/server/grpc_server"
-	"UserService/internal/server/http_router"
+	"UserService/internal/servers/grpc_server"
+	"UserService/internal/servers/http_router"
 	"UserService/internal/service"
 	"UserService/internal/storage/postgres"
 	"context"
@@ -54,6 +54,18 @@ func main() {
 	errG.Go(func() error {
 		logger.Printf("starting http server on port: %s", cfg.ServerPort)
 		return httpRouter.Start()
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("stopping grpc server...")
+		return grpcServer.Stop()
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("stopping http server...")
+		return httpRouter.Stop(gCtx)
 	})
 
 	errG.Go(func() error {

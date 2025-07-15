@@ -17,11 +17,11 @@ type Server struct {
 	protobuf.UnimplementedUserServiceServer
 	logger  *logrus.Logger
 	service service.UserService
+	srv     *grpc.Server
 	port    int
 }
 
 func NewGrpcServer(logger *logrus.Logger, cfg *config.Config, service service.UserService) *Server {
-	grpc.NewServer()
 	return &Server{
 		logger:  logger.WithField("server", "grpc").Logger,
 		service: service,
@@ -45,6 +45,13 @@ func (s *Server) Start() error {
 	if config.GetEnv() == "development" {
 		reflection.Register(grpcServer)
 	}
-	
+
+	s.srv = grpcServer
+
 	return grpcServer.Serve(listen)
+}
+
+func (s *Server) Stop() error {
+	s.srv.GracefulStop()
+	return nil
 }

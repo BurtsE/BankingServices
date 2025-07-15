@@ -35,7 +35,7 @@ func (r *Router) createAccountHandler(w http.ResponseWriter, req *http.Request) 
 	)
 	if err != nil {
 		r.logger.WithError(err).Error("account creation fail")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
