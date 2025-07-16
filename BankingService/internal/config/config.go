@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	ServerPort string `json:"port" yaml:"http_port"`
+	ServerPort string `json:"http_port" yaml:"http_port"`
 	GRPCPort   int    `json:"grpc_port" yaml:"grpc_port"`
 	JWTSecret  string `json:"jwt_secret" yaml:"jwt_secret"`
 	LogLevel   string `json:"log_level" yaml:"log_level"`
