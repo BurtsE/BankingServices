@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "banking_app/generated/protobuf;protobuf";
+
+service BankingService {
+  rpc AccountIsActive(IsActiveRequest) returns (IsActiveResponse);
+}
+
+message IsActiveRequest {
+  string account_id = 1;
+}
+
+message IsActiveResponse {
+  bool is_active = 1;
+}
