@@ -34,7 +34,6 @@ services:
     restart: unless-stopped
     ports:
       - "8081:8080"
-      - "80:80"
     networks:
       - internal
 
@@ -62,6 +61,8 @@ services:
       context: ../BankingService
       dockerfile: ./build/Dockerfile
     container_name: banking_service
+    environment:
+      ENV: "development"
     depends_on:
       banking_postgres:
         condition: service_healthy
@@ -81,6 +82,7 @@ services:
       USER_SERVICE_HTTP_URI: http://user_service:8080
       USER_SERVICE_GRPC_URI: user_service:80
       BANKING_SERVICE_URI: http://banking_service:8080
+      CARD_SERVICE_URI: http://card_service:8080
     restart: unless-stopped
     depends_on:
       gateway_redis:
