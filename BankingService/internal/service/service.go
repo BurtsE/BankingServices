@@ -21,6 +21,8 @@ type BankingService interface {
 	//GetAccountsByUser(ctx context.Context, userID string) ([]*domain.Account, error)
 
 	GetAccountByID(ctx context.Context, accountID string) (*domain.Account, error)
+
+	AccountIsActive(ctx context.Context, accountID string) (bool, error)
 }
 
 var _ BankingService = (*Service)(nil)
