@@ -3,3 +3,5 @@
 .env
 
 *.key
+
+prometheus_data

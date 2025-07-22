@@ -7,8 +7,6 @@ services:
       POSTGRES_USER: user_dbuser
       POSTGRES_PASSWORD: user_dbpass
       POSTGRES_DB: user_dbname
-    ports:
-      - "5432:5432"
     volumes:
       - ../UserService/internal/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
@@ -43,8 +41,6 @@ services:
       POSTGRES_USER: banking_dbuser
       POSTGRES_PASSWORD: banking_dbpass
       POSTGRES_DB: banking_dbname
-    ports:
-      - "5433:5432"
     volumes:
       - ../BankingService/internal/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
@@ -69,6 +65,45 @@ services:
     restart: unless-stopped
     ports:
       - "8082:8080"
+    networks:
+      - internal
+
+  card_postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: card_dbuser
+      POSTGRES_PASSWORD: card_dbpass
+      POSTGRES_DB: card_dbname
+    volumes:
+      - ../CardService/internal/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U banking_dbuser -d banking_dbname" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
+  card_service:
+    build:
+      context: ../CardService
+      dockerfile: ./build/Dockerfile
+    container_name: card_service
+    environment:
+      ENV: "development"
+      BANKING_SERVICE_GRPC_URI: banking_service:80
+      CARD_SECRET_KEY: "passphrasewhichneedstobe32bytes!"
+      PGP_PUBLIC_KEY_PATH: "/pgp_keys/public.key"
+      PGP_PRIVATE_KEY_PATH: "/pgp_keys/private.key"
+    volumes:
+      - ../CardService/pgp_keys:/pgp_keys:ro
+    depends_on:
+      card_postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - "8083:8080"
     networks:
       - internal
 
