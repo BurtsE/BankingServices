@@ -9,6 +9,8 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	"net"
 )
@@ -30,12 +32,15 @@ func NewGrpcServer(logger *logrus.Logger, cfg *config.Config, service service.Us
 }
 
 func (s *Server) Start() error {
+	//Add interceptors
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			logging.UnaryServerInterceptor(middleware.NewInterceptorLogger(s.logger)),
 			middleware.NewGrpcPanicRecoveryHandler(s.logger),
 		))
 	protobuf.RegisterUserServiceServer(grpcServer, s)
+
+	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 
 	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", s.port))
 	if err != nil {
