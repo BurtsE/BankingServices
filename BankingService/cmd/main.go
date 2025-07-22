@@ -72,16 +72,8 @@ func main() {
 
 	errG.Go(func() error {
 		<-gCtx.Done()
-		logger.Println("stopping grpc server...")
-		return grpcServer.Stop()
-	})
-
-	errG.Go(func() error {
-		<-gCtx.Done()
-		log.Println("closing database...")
-		if db != nil {
-			db.Close()
-		}
+		logger.Println("closing database...")
+		db.Close()
 		return nil
 	})
 
