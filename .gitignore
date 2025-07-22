@@ -4,4 +4,4 @@
 
 *.key
 
-prometheus_data
+prometheus_data/*
