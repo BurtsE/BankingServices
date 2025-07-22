@@ -2,10 +2,10 @@
   "port": "8080",
   "log_level": "DEBUG",
   "postgres": {
-    "host": "cards_postgres",
+    "host": "card_postgres",
     "port": "5432",
-    "username": "cards_dbuser",
-    "password": "cards_dbpass",
-    "database": "cards_dbname"
+    "username": "card_dbuser",
+    "password": "card_dbpass",
+    "database": "card_dbname"
   }
 }

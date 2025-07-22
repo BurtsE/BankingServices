@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const ROUTER_PREFIX = "/card"
+const ROUTER_PREFIX = "/api/v1/card"
 
 type Router struct {
 	logger *logrus.Logger

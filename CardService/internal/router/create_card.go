@@ -20,6 +20,12 @@ func (r *Router) createCardHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if reqBody.AccountID == "" || reqBody.CardHolderName == "" {
+		r.logger.Debugf("createCard: not enough parameters: %v", reqBody)
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 
@@ -31,7 +37,7 @@ func (r *Router) createCardHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if !isActive {
-		r.logger.WithError(err).Error("invalid account id")
+		r.logger.WithError(err).Error("account deactivated")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
