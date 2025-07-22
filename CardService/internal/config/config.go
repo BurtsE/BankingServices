@@ -38,10 +38,20 @@ func GetCardSecretKey() string {
 }
 
 func GetEncryptionPublicKey() string {
-	return getEnv("ENCRYPTION_PUBLIC_KEY")
+	keyPath := os.Getenv("PGP_PUBLIC_KEY_PATH")
+	keyData, err := os.ReadFile(keyPath)
+	if err != nil {
+		log.Fatalf("could not read pgp key: %v", err)
+	}
+	return string(keyData)
 }
 func GetEncryptionPrivateKey() string {
-	return getEnv("ENCRYPTION_PRIVATE_KEY")
+	keyPath := os.Getenv("PGP_PRIVATE_KEY_PATH")
+	keyData, err := os.ReadFile(keyPath)
+	if err != nil {
+		log.Fatalf("could not read pgp key: %v", err)
+	}
+	return string(keyData)
 }
 
 func GetBankingServiceGrpcURI() string {

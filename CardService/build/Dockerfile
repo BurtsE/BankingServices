@@ -12,7 +12,6 @@ COPY generated generated
 
 RUN GOOS=linux go build -o card_service ./cmd
 
-
 FROM golang:latest
 
 WORKDIR /app
