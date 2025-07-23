@@ -20,7 +20,7 @@ func (r *Router) registerUserHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if reqBody.Email == "" || reqBody.Username == "" || reqBody.Password == "" {
+	if reqBody.Email == "" || reqBody.Username == "" || reqBody.Password == "" || reqBody.FullName == "" {
 		r.logger.Debugf("insufficient request body: %v", reqBody)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return

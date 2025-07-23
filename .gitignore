@@ -4,4 +4,4 @@
 
 *.key
 
-prometheus_data/*
+deploy/prometheus_data

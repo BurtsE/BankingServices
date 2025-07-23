@@ -1,3 +1,3 @@
 package generated
 
-//go:generate protoc --proto_path=../../api --go_out=./protobuf/ --go_opt=paths=source_relative --go-grpc_out=./protobuf/ --go-grpc_opt=paths=source_relative token.proto
+//go:generate protoc --proto_path=../../api/proto --go_out=./protobuf/ --go_opt=paths=source_relative --go-grpc_out=./protobuf/ --go-grpc_opt=paths=source_relative token.proto

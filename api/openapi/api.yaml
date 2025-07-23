@@ -1,0 +1,499 @@
+openapi: 3.0.0
+info:
+  title: BankingApp API
+  version: 1.0.0
+  description: >
+    API для банковского приложения.
+servers:
+  - url: '{{baseUrl}}/api/v1'
+paths:
+  /user/register:
+    parameters: []
+    post:
+      tags:
+        - User
+      summary: Регистрация нового пользователя
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserDTO"
+      responses:
+        '201':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserCreated"
+        '400':
+          headers: {}
+          description: Invalid registtry parameters
+
+  /user/login:
+    parameters: []
+    post:
+      tags:
+        - User
+      summary: User authentication
+      requestBody:
+        description: Optional description in *Markdown*
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginDTO"
+      responses:
+        '200':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenValue"
+        '400':
+          headers: {}
+          description: Invalid request body
+        '401':
+          headers: {}
+          description: Invalid token
+  /account/create:
+    parameters: []
+    post:
+      tags:
+        - Account
+      security:
+        - bearerAuth: []
+      summary: Create account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountDTO"
+      responses:
+        '200':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: Account succesfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountCreated"
+        '400':
+          headers: {}
+          description: Invalid request body
+        '401':
+          headers: {}
+          description: Unauthorized
+
+  /account/deposit:
+    parameters: []
+    post:
+      tags:
+        - Account
+      security:
+        - bearerAuth: []
+      summary: Top up account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepositRequestDTO"
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "{'status':'ok'}"
+          description: Operation succeeded
+        '400':
+          headers: {}
+          description: Invalid parameters
+        '401':
+          headers: {}
+          description: Unauthorized
+        '500':
+          description: Internal server error
+
+  /account/withdraw:
+    parameters: []
+    post:
+      tags:
+        - Account
+      security:
+        - bearerAuth: []
+      summary: Withdraw money from account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WithdrawRequestDTO"
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "{'status':'ok'}"
+          description: Operation succeeded
+        '400':
+          headers: {}
+          description: Invalid parameters
+        '401':
+          headers: {}
+          description: Unauthorized
+        '500':
+          description: Internal server error
+
+  /account/transfer:
+    parameters: []
+    post:
+      tags:
+        - Account
+      security:
+        - bearerAuth: []
+      summary: Transfer from one account to another
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferRequestDTO"
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "{'status':'ok'}"
+          description: Operation succeeded
+        '400':
+          headers: {}
+          description: Invalid parameters
+        '401':
+          headers: {}
+          description: Unauthorized
+        '500':
+          description: Internal server error
+
+  /card/issue:
+    parameters: []
+    post:
+      tags:
+        - Card
+      security:
+        - bearerAuth: []
+      summary: Issue virtual card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IssueCardRequestDTO"
+      responses:
+        '201':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: Card issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardCreated"
+  /card/show:
+    parameters: []
+    get:
+      summary: Получить информацию о карте
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: Описание карты
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account_id:
+                  type: integer
+  /credit/issue:
+    parameters: []
+    post:
+      summary: Оформление кредита
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '201':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: Кредит оформлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                currency:
+                  type: string
+                months:
+                  type: integer
+                rate:
+                  type: number
+  /credit/schedule:
+    parameters: []
+    post:
+      summary: Запуск графика автоматических платежей
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: График запущен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  /credit/payment-graph:
+    parameters: []
+    post:
+      summary: Генерация графика платежей
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          example: application/json
+          schema:
+            type: string
+      responses:
+        '200':
+          headers:
+            Content-Type:
+              schema:
+                type: string
+              example: application/json
+          description: График платежей сгенерирован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateUserDTO:
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 8
+        username:
+          type: string
+        full_name:
+          type: string
+    UserCreated:
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        email:
+          type: string
+        full_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    UserLoginDTO:
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    TokenValue:
+      properties:
+        token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    CreateAccountDTO:
+      properties:
+        account_type:
+          type: string
+          enum: [ natural, legal ]
+        account_subtype:
+          oneOf:
+            - $ref: "#/components/schemas/NaturalAccountSubtype"
+            - $ref: "#/components/schemas/LegalAccountSubtype"
+        currency:
+          type: string
+          enum: [RUB, USD]
+    NaturalAccountSubtype:
+      type: string
+      enum: [physical]
+    LegalAccountSubtype:
+      type: string
+      enum: [ financial, commercial, nonCommercial, election, tfa, defence, specialBroker ]
+    AccountCreated:
+      properties:
+        ID:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        currency:
+          type: string
+          enum: [RUB, USD]
+        balance:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+    DepositRequestDTO:
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+    WithdrawRequestDTO:
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+    TransferRequestDTO:
+      properties:
+        from_account_id:
+          type: string
+          format: uuid
+        to_account_id:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+    IssueCardRequestDTO:
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        card_holder_name:
+          type: string
+    CardCreated:
+      properties:
+        expiry_month:
+          type: integer
+        expiry_year:
+          type: integer
+        id:
+          type: integer
+        account_id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+          minLength: 16
+          maxLength: 16
+        cvv:
+          type: integer
+          minLength: 3
+          maxLength: 3
+        card_holder_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+
+
+
+
+
+
+
+
+
+
+
+
+
+
