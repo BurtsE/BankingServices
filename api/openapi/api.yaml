@@ -3,7 +3,7 @@ info:
   title: BankingApp API
   version: 1.0.0
   description: >
-    API для банковского приложения.
+    API for bank application.
 servers:
   - url: '{{baseUrl}}/api/v1'
 paths:
@@ -12,7 +12,7 @@ paths:
     post:
       tags:
         - User
-      summary: Регистрация нового пользователя
+      summary: Register new user
       requestBody:
         description: Optional description in *Markdown*
         required: true
