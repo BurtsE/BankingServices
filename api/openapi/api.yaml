@@ -14,7 +14,6 @@ paths:
         - User
       summary: Register new user
       requestBody:
-        description: Optional description in *Markdown*
         required: true
         content:
           application/json:
@@ -43,7 +42,6 @@ paths:
         - User
       summary: User authentication
       requestBody:
-        description: Optional description in *Markdown*
         required: true
         content:
           application/json:
@@ -219,17 +217,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CardCreated"
-  /card/show:
+  /card/show/{account_id}:
     parameters: []
     get:
-      summary: Получить информацию о карте
+      tags:
+        - Card
+      summary: Get information about all cards tied to account
       parameters:
-        - name: Accept
-          in: header
-          required: false
-          example: application/json
+        - name: account_id
+          in: path
+          required: true
           schema:
             type: string
+            format: uuid
       responses:
         '200':
           headers:
@@ -237,22 +237,14 @@ paths:
               schema:
                 type: string
               example: application/json
-          description: Описание карты
+          description: Card issued
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                account_id:
-                  type: integer
+                type: array
+                items:
+                  $ref: "#/components/schemas/CardCreated"
+
   /credit/issue:
     parameters: []
     post:
@@ -469,13 +461,15 @@ components:
           type: string
           format: uuid
         number:
-          type: integer
+          type: string
           minLength: 16
           maxLength: 16
+          example: "4913937573792137"
         cvv:
-          type: integer
+          type: string
           minLength: 3
           maxLength: 3
+          example: "321"
         card_holder_name:
           type: string
         created_at:
