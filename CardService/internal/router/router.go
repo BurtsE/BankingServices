@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-const ROUTER_PREFIX = "/api/v1/card"
+const RouterPrefix = "/api/v1/card"
+
+const DefaultTimeout = 30 * time.Second
 
 type Router struct {
 	logger *logrus.Logger
@@ -23,15 +25,14 @@ type Router struct {
 
 func NewRouter(cfg *config.Config, logger *logrus.Logger, service service.CardService, banking service.IBankingService) *Router {
 
-	muxRouter := mux.NewRouter().PathPrefix(ROUTER_PREFIX).Subrouter()
+	muxRouter := mux.NewRouter().PathPrefix(RouterPrefix).Subrouter()
 	muxRouter.Use(middleware.NewLoggerMiddleware(logger))
 	muxRouter.Use(middleware.NewPanicMiddleware(logger))
 
 	srv := &http.Server{
-		Handler:      muxRouter,
-		Addr:         ":" + cfg.ServerPort,
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		Handler:     muxRouter,
+		Addr:        ":" + cfg.ServerPort,
+		ReadTimeout: 15 * time.Second,
 	}
 
 	r := &Router{

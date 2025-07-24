@@ -4,7 +4,6 @@ import (
 	"CardService/generated/protobuf"
 	"CardService/internal/service"
 	"context"
-	"time"
 )
 
 var _ service.IBankingService = (*BankingService)(nil)
@@ -17,12 +16,9 @@ func NewBankingService(client protobuf.BankingServiceClient) *BankingService {
 	return &BankingService{client: client}
 }
 
-func (b *BankingService) AccountIsActive(accountID string) (ok bool, err error) {
+func (b *BankingService) AccountIsActive(ctx context.Context, accountID string) (ok bool, err error) {
 
 	isActiveRequest := &protobuf.IsActiveRequest{AccountId: accountID}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
 	resp, err := b.client.AccountIsActive(ctx, isActiveRequest)
 	if err != nil {

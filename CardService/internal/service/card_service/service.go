@@ -2,10 +2,8 @@ package card_service
 
 import (
 	"CardService/internal/config"
-	"CardService/internal/domain"
 	"CardService/internal/service"
 	"CardService/internal/storage"
-	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"log"
@@ -35,14 +33,4 @@ func NewCardService(storage storage.CardStorage) *CardService {
 	s.gcm = gcm
 
 	return s
-}
-
-func (c *CardService) GetCardsByAccount(ctx context.Context, accountID int64) ([]*domain.Card, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (c *CardService) GetCardByIDForOwner(ctx context.Context, cardID, ownerUserID int64) (*domain.Card, error) {
-	//TODO implement me
-	panic("implement me")
 }

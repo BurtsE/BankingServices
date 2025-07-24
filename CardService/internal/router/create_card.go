@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"time"
 )
 
 type createCardRequest struct {
@@ -26,10 +25,10 @@ func (r *Router) createCardHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(req.Context(), DefaultTimeout)
 	defer cancel()
 
-	isActive, err := r.banking.AccountIsActive(reqBody.AccountID)
+	isActive, err := r.banking.AccountIsActive(ctx, reqBody.AccountID)
 	if err != nil {
 		r.logger.WithError(err).Error("could not validate account")
 		http.Error(w, err.Error(), http.StatusBadRequest)

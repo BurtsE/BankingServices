@@ -26,7 +26,7 @@ func (p *PostgresRepository) GetCardsByAccount(ctx context.Context, accountID st
 			encrypted_pan []byte
 		)
 
-		if err := rows.Scan(&card.ID, &encrypted_pan, &card.ExpiryMonth, &card.ExpiryYear, &card.CardholderName, &card.IsActive, &card.CreatedAt); err != nil {
+		if err = rows.Scan(&card.ID, &encrypted_pan, &card.ExpiryMonth, &card.ExpiryYear, &card.CardholderName, &card.IsActive, &card.CreatedAt); err != nil {
 			return nil, fmt.Errorf("GetCardsByAccount scan: %w", err)
 		}
 

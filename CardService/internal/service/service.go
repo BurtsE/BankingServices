@@ -7,10 +7,10 @@ import (
 
 type CardService interface {
 	GenerateVirtualCard(ctx context.Context, accountID string, cardholderName string) (*domain.Card, error)
-	GetCardsByAccount(ctx context.Context, accountID int64) ([]*domain.Card, error)
-	GetCardByIDForOwner(ctx context.Context, cardID, ownerUserID int64) (*domain.Card, error) // с расшифровкой
+	GetCardsByAccount(ctx context.Context, accountID string) ([]*domain.Card, error)
+	//GetCardByIDForOwner(ctx context.Context, cardID, ownerUserID int64) (*domain.Card, error) // с расшифровкой
 }
 
 type IBankingService interface {
-	AccountIsActive(accountID string) (ok bool, err error)
+	AccountIsActive(ctx context.Context, accountID string) (ok bool, err error)
 }
