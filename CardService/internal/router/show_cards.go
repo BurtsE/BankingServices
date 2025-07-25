@@ -3,6 +3,7 @@ package router
 import (
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -10,6 +11,12 @@ import (
 func (r *Router) showCardsHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	accountID := vars["accountID"]
+
+	if _, err := uuid.Parse(accountID); err != nil {
+		r.logger.WithError(err).WithField("accountID", accountID).Error("Invalid account ID")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	ctx, cancel := context.WithTimeout(req.Context(), DefaultTimeout)
 	defer cancel()

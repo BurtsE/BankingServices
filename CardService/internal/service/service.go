@@ -8,7 +8,8 @@ import (
 type CardService interface {
 	GenerateVirtualCard(ctx context.Context, accountID string, cardholderName string) (*domain.Card, error)
 	GetCardsByAccount(ctx context.Context, accountID string) ([]*domain.Card, error)
-	//GetCardByIDForOwner(ctx context.Context, cardID, ownerUserID int64) (*domain.Card, error) // с расшифровкой
+	BlockCard(ctx context.Context, accountID string, pan string) (bool, error)
+	//GetCardByIDForOwner(ctx context.Context, cardID, ownerUserID int64) (*domain.Card, error)
 }
 
 type IBankingService interface {

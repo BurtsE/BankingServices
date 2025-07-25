@@ -31,20 +31,20 @@ func (r *Router) createCardHandler(w http.ResponseWriter, req *http.Request) {
 	isActive, err := r.banking.AccountIsActive(ctx, reqBody.AccountID)
 	if err != nil {
 		r.logger.WithError(err).Error("could not validate account")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Could not process account id", http.StatusBadRequest)
 		return
 	}
 
 	if !isActive {
 		r.logger.WithError(err).Error("account deactivated")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Account deactivated", http.StatusBadRequest)
 		return
 	}
 
 	card, err := r.service.GenerateVirtualCard(ctx, reqBody.AccountID, reqBody.CardHolderName)
 	if err != nil {
 		r.logger.WithError(err).Error("card generation failed")
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Service unavailable", http.StatusInternalServerError)
 		return
 	}
 

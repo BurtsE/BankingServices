@@ -44,6 +44,7 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, service service.CardSe
 
 	muxRouter.HandleFunc("/create", r.createCardHandler).Methods("POST")
 	muxRouter.HandleFunc("/show/{accountID}", r.showCardsHandler).Methods("GET")
+	muxRouter.HandleFunc("/block", r.blockCardHandler).Methods("POST")
 
 	return r
 }

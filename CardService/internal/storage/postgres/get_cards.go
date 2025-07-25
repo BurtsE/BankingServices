@@ -4,7 +4,6 @@ import (
 	"CardService/internal/domain"
 	"context"
 	"fmt"
-	"github.com/ProtonMail/gopenpgp/v3/crypto"
 )
 
 func (p *PostgresRepository) GetCardsByAccount(ctx context.Context, accountID string) ([]*domain.Card, error) {
@@ -22,15 +21,15 @@ func (p *PostgresRepository) GetCardsByAccount(ctx context.Context, accountID st
 	cards := make([]*domain.Card, 0)
 	for rows.Next() {
 		var (
-			card          domain.Card
-			encrypted_pan []byte
+			card         domain.Card
+			encryptedPan []byte
 		)
 
-		if err = rows.Scan(&card.ID, &encrypted_pan, &card.ExpiryMonth, &card.ExpiryYear, &card.CardholderName, &card.IsActive, &card.CreatedAt); err != nil {
+		if err = rows.Scan(&card.ID, &encryptedPan, &card.ExpiryMonth, &card.ExpiryYear, &card.CardholderName, &card.IsActive, &card.CreatedAt); err != nil {
 			return nil, fmt.Errorf("GetCardsByAccount scan: %w", err)
 		}
 
-		pan, err := p.decryptWithPGP(encrypted_pan)
+		pan, err := p.decryptWithPGP(encryptedPan)
 		if err != nil {
 			return nil, fmt.Errorf("GetCardsByAccount decryption: %w", err)
 		}
@@ -41,22 +40,4 @@ func (p *PostgresRepository) GetCardsByAccount(ctx context.Context, accountID st
 	}
 
 	return cards, rows.Err()
-}
-
-// Decrypt armored encrypted message using the private key and obtain the plaintext
-func (p *PostgresRepository) decryptWithPGP(encrypted []byte) (string, error) {
-	pgp := crypto.PGP()
-
-	// Decrypt armored encrypted message using the private key and obtain the plaintext
-	decHandle, err := pgp.Decryption().DecryptionKey(p.privateKey).New()
-	if err != nil {
-		return "", err
-	}
-
-	decrypted, err := decHandle.Decrypt(encrypted, crypto.Armor)
-	if err != nil {
-		return "", err
-	}
-
-	return decrypted.String(), nil
 }
