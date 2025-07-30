@@ -1,4 +1,4 @@
-name: banking_app
+# name: banking_app
 
 services:
   user_postgres:
@@ -77,7 +77,7 @@ services:
     volumes:
       - ../CardService/internal/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U banking_dbuser -d banking_dbname" ]
+      test: [ "CMD-SHELL", "pg_isready -U card_dbuser -d card_dbname" ]
       interval: 5s
       timeout: 10s
       retries: 5
