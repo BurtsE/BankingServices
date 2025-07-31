@@ -5,3 +5,5 @@
 *.key
 
 deploy/prometheus_data
+
+.42c/

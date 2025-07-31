@@ -1,4 +1,4 @@
-FROM golang:latest as builder
+FROM golang:1.24-alpine as builder
 
 WORKDIR /app
 ADD go.mod .
@@ -13,7 +13,7 @@ COPY generated generated
 RUN GOOS=linux go build -o gateway ./cmd
 
 
-FROM golang:latest
+FROM alpine:latest
 
 WORKDIR /app
 COPY --from=builder /app/gateway .

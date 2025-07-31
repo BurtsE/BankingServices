@@ -38,6 +38,7 @@ func (p *PostgresRepository) BlockCard(ctx context.Context, accountID string, pa
 			break
 		}
 	}
+
 	var is_active bool
 	query = `
 		UPDATE cards
