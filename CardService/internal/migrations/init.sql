@@ -1,3 +1,5 @@
+CREATE EXTENSION pgcrypto;
+
 CREATE TABLE IF NOT EXISTS cards (
     id BIGSERIAL PRIMARY KEY,
     account_id UUID NOT NULL,

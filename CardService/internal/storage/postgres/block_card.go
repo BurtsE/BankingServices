@@ -2,7 +2,8 @@ package postgres
 
 import (
 	"context"
-	"crypto/sha256"
+	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -15,11 +16,13 @@ func (p *PostgresRepository) BlockCard(ctx context.Context, accountID string, pa
 	query := `
 		SELECT id, encode(encrypted_pan, 'escape')::text
 			FROM cards
-			WHERE account_id = $1 AND hashed_pan = $2::bytea
+			WHERE account_id = $1 AND hashed_pan = digest( $2, 'sha256')
 	`
-	hashedPan := sha256.Sum256([]byte(pan))
 
-	rows, err := p.pool.Query(ctx, query, accountID, hashedPan)
+	rows, err := p.pool.Query(ctx, query, &accountID, &pan)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
 	if err != nil {
 		return false, err
 	}
