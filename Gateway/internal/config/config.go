@@ -51,6 +51,11 @@ func GetCardServiceURI() string {
 func GetPrometheusPort() string {
 	return getEnv("PROMETHEUS_PORT")
 }
+
+func GetJaegerUrl() string {
+	return getEnv("JAEGER_URL")
+}
+
 func getEnv(param string) string {
 	val := os.Getenv(param)
 	if val == "" {

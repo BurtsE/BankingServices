@@ -35,12 +35,12 @@ func (r *Router) getIDFromJWTHeader(req *http.Request) (string, error) {
 		}
 
 		r.logger.Debugf("caching token: %v", jwt)
-		err = r.tokenCache.Save(req.Context(), jwt, uuid, caching_duration)
+		err = r.tokenCache.Save(req.Context(), jwt, uuid, cachingDuration)
 		if err != nil {
 			r.logger.Errorf("Error saving token: %v", err)
 		}
 	}
-	
+
 	return uuid, nil
 }
 

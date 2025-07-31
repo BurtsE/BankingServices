@@ -9,14 +9,16 @@ import (
 	"gateway/internal/router"
 	"gateway/internal/service/user_service"
 	"gateway/pkg/metrics"
+	"gateway/pkg/tracing"
+	"log"
+	"os"
+	"os/signal"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
-	"os"
-	"os/signal"
 
 	"syscall"
 )
@@ -42,6 +44,13 @@ func main() {
 
 	if cfg.LogLevel == "DEBUG" {
 		logger.SetLevel(logrus.DebugLevel)
+	}
+
+	// initialixing jaeger tracer (global), http router should use middleware
+	jaegerURL := config.GetJaegerUrl()
+	tracer, err := tracing.InitTracer(jaegerURL, "Gateway service")
+	if err != nil {
+		logger.Fatal(err)
 	}
 
 	// connecting to redis
@@ -101,6 +110,12 @@ func main() {
 		<-gCtx.Done()
 		logger.Println("closing metric server...")
 		return metricServer.Stop(gCtx)
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("closing jaeger connection...")
+		return tracer.Shutdown(context.Background())
 	})
 
 	errG.Go(func() error {

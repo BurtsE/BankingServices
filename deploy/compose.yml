@@ -118,6 +118,7 @@ services:
       USER_SERVICE_GRPC_URI: user_service:80
       BANKING_SERVICE_URI: http://banking_service:8080
       CARD_SERVICE_URI: http://card_service:8080
+      JAEGER_URL: http://jaeger:4318/v1/traces  
     restart: unless-stopped
     depends_on:
       gateway_redis:
@@ -152,6 +153,13 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     restart: unless-stopped
+  jaeger:
+    image: jaegertracing/all-in-one
+    ports:
+      - "4318:4318"
+      - "16686:16686"
+    networks:
+        - internal
 
 networks:
   internal:
