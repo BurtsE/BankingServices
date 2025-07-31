@@ -5,7 +5,7 @@ info:
   description: >
     API for bank application.
 servers:
-  - url: '{{baseUrl}}/api/v1'
+  - url: 'http://baseUrl/api/v1'
 paths:
   /user/register:
     parameters: []
@@ -217,6 +217,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CardCreated"
+        '400':
+          headers: {}
+          description: Invalid parameters
+        '401':
+          headers: {}
+          description: Unauthorized
+        '500':
+          description: Internal server error
   /card/show/{account_id}:
     parameters: []
     get:
@@ -244,6 +252,38 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CardCreated"
+
+  /card/block:
+    parameters: []
+    post:
+      tags:
+        - Card
+      security:
+        - bearerAuth: []
+      summary: Block card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlockCardRequestDTO"
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "{'status':'ok'}"
+          description: Operation succeeded
+        '400':
+          headers: {}
+          description: Invalid parameters
+        '401':
+          headers: {}
+          description: Unauthorized
+        '500':
+          description: Internal server error
+      
 
   /credit/issue:
     parameters: []
@@ -477,6 +517,16 @@ components:
           format: date-time
         is_active:
           type: boolean
+    BlockCardRequestDTO:
+      properties:
+        account_id:
+          type: string
+          format: uuid
+        pan:
+          type: string
+          minLength: 16
+          maxLength: 16
+          example: "4913937573792137"
 
 
 
