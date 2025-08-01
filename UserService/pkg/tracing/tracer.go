@@ -20,7 +20,7 @@ func NewExporter(url string) (*otlptrace.Exporter, error) {
 
 }
 
-func NewTraceProvider(exp tracesdk.SpanExporter, ServiceName string) (*tracesdk.TracerProvider, error) {
+func newTraceProvider(exp tracesdk.SpanExporter, ServiceName string) (*tracesdk.TracerProvider, error) {
 	// Ensure default SDK resources and the required service name are set.
 
 	r, err := resource.Merge(
@@ -46,9 +46,9 @@ func InitTracer(jaegerURL string, serviceName string) (*tracesdk.TracerProvider,
 		return nil, fmt.Errorf("initialize exporter: %w", err)
 	}
 
-	tp, err := NewTraceProvider(exporter, serviceName)
+	tp, err := newTraceProvider(exporter, serviceName)
 	if err != nil {
-		return nil, fmt.Errorf("initialize provider: %w", err)
+		return nil, fmt.Errorf("initialize trace provider: %w", err)
 	}
 
 	otel.SetTextMapPropagator(propagation.TraceContext{})

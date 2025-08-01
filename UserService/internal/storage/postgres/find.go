@@ -4,6 +4,7 @@ import (
 	model "UserService/internal/domain"
 	"context"
 	"errors"
+
 	"github.com/jackc/pgx/v5"
 )
 

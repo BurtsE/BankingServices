@@ -43,6 +43,10 @@ func GetEnv() string {
 	return getEnv("ENV")
 }
 
+func GetJaegerUrl() string {
+	return getEnv("JAEGER_URL")
+}
+
 func getEnv(param string) string {
 	val := os.Getenv(param)
 	if val == "" {

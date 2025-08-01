@@ -29,6 +29,8 @@ services:
     environment:
       JWT_SECRET_KEY: "very-secret-key"
       ENV: "development"
+      JAEGER_URL: http://jaeger:4318/v1/traces  
+
     restart: unless-stopped
     ports:
       - "8081:8080"
