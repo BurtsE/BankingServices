@@ -16,7 +16,7 @@ A modern banking application built with Go (Golang) that enables management of u
 
 ### 1. User Service
 - User registration
-- Secure login and authentication (JWT-based or similar)
+- Secure login and authentication (JWT-based)
 
 ### 2. Banking Service
 - Create new accounts per user
@@ -32,7 +32,6 @@ A modern banking application built with Go (Golang) that enables management of u
 
 - **REST API**: OpenAPI 3.0 specification available in `api/rest/`
 - **gRPC Services**: Protocol buffer (`.proto`) files in `api/grpc/`
-- Generated clients and servers use gRPC-Gateway for HTTP/JSON compatibility
 
 ## 🧪 Project Structure
 
