@@ -1,31 +1,63 @@
-# Банковское приложение на Go, позволяющее управлять пользователями, счетами и транзакциями. 
+# Banking Application in Go
 
-## 🛠 Технологии и стек 
-- Язык программирования: Go (Golang) 
-- API: RESTful, grpc
-- Логирование: logrus
-- БД: PostgreSQL
-- Кэш: Redis
-- Метрики: Prometheus
-- Трейсинг: Opentelemetry, Jaeger
+A modern banking application built with Go (Golang) that enables management of users, bank accounts, and virtual cards. The system supports core banking operations such as fund transfers, deposits, withdrawals, and secure user authentication.
 
-## 🚀 Функциональность 
-1. Пользователи (User service) 
-- Регистрация нового пользователя 
-- Аутентификация (логин) 
-2. Работа со счетами пользователя (Banking service)
-- Создание нового счета
-- Пополнение и снятие средств
-- Перевод средств между счетами
-3. Вируальные карты (Card service)
-- Генерация виртуальных карт
-- Просмотр информации о картах
-- Блокировка карт
+## 🛠 Technologies and Stack
 
-## 📌 Описание API 
-Openapi спецификация и proto файлы представлены в директории api
+- **Language**: Go (Golang)
+- **APIs**: RESTful (HTTP), gRPC
+- **Logging**: [logrus](https://github.com/sirupsen/logrus)
+- **Database**: PostgreSQL
+- **Cache**: Redis
+- **Monitoring**: Prometheus (metrics), OpenTelemetry + Jaeger (tracing)
+- **Infrastructure**: Docker, Docker Compose
 
-## Запуск проекта
-Запуск проекта существляется из корневой директории проекта командой:
-Доступ к приложению будет по адресу localhost:8080
-docker-compose -f .\deploy\compose.yml -p "banking_app" up --build  app
+## 🚀 Features
+
+### 1. User Service
+- User registration
+- Secure login and authentication (JWT-based or similar)
+
+### 2. Banking Service
+- Create new accounts per user
+- Deposit and withdraw funds
+- Transfer money between accounts (internal and external)
+
+### 3. Card Service
+- Generate virtual debit cards
+- View card details (masked PAN, expiry, status)
+- Block or deactivate cards
+
+## 📌 API Documentation
+
+- **REST API**: OpenAPI 3.0 specification available in `api/rest/`
+- **gRPC Services**: Protocol buffer (`.proto`) files in `api/grpc/`
+- Generated clients and servers use gRPC-Gateway for HTTP/JSON compatibility
+
+## 🧪 Project Structure
+
+├── api/ # OpenAPI & Protobuf definitions
+
+├── deploy/ # docker-compose
+
+├── configs/ # Configuration files (YAML, env)
+
+├── {service}/
+
+│ ├── cmd/ # Application entry points
+
+│ ├── internal/ # Internal application logic
+
+│ ├── deploy/ # Docker
+
+│ ├── configs/ # Configuration files (YAML, json)
+
+└ └─ pkg/ # Shared utilities (auth, db, middleware, etc.)
+
+## Deploy
+
+With command:
+
+docker-compose -f ./deploy/compose.yml -p "banking_app" up --build app
+
+Default address: localhost:8080
