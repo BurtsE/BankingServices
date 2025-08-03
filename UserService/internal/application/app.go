@@ -6,23 +6,29 @@ import (
 	"UserService/internal/servers/http_router"
 	"UserService/internal/service"
 	"UserService/internal/storage/postgres"
+	"UserService/pkg/tracing"
 	"context"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
 	"os"
+
 	"os/signal"
 	"syscall"
+
+	"github.com/exaring/otelpgx"
+	"github.com/sirupsen/logrus"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	"golang.org/x/sync/errgroup"
 )
 
 type Application struct {
-	logger      *logrus.Logger
-	userStorage *postgres.PostgresRepository
-	service     service.UserService
-	httpServer  *http_router.Router
-	grpcServer  *grpc_server.Server
-	config      *config.Config
-	errG        *errgroup.Group
-	ctx         context.Context
+	logger         *logrus.Logger
+	userStorage    *postgres.PostgresRepository
+	service        service.UserService
+	httpServer     *http_router.Router
+	grpcServer     *grpc_server.Server
+	tracerProvider *tracesdk.TracerProvider
+	config         *config.Config
+	errG           *errgroup.Group
+	ctx            context.Context
 }
 
 func NewApp(ctx context.Context) *Application {
@@ -41,9 +47,22 @@ func NewApp(ctx context.Context) *Application {
 		a.logger.SetLevel(logrus.DebugLevel)
 	}
 
+	// initialixing jaeger tracer (global), http router should use middleware
+	jaegerURL := config.GetJaegerUrl()
+	a.tracerProvider, err = tracing.InitTracer(jaegerURL, "User service")
+	if err != nil {
+		a.logger.Fatal(err)
+	}
+
 	// Init repository
 	a.userStorage, err = postgres.NewPostgresRepository(a.ctx, a.config)
 	if err != nil {
+		a.logger.Fatal(err)
+	}
+
+	// start tracking requests to database
+	if err := otelpgx.RecordStats(a.userStorage.Pool()); err != nil {
+		a.userStorage.Close()
 		a.logger.Fatal(err)
 	}
 
@@ -51,7 +70,7 @@ func NewApp(ctx context.Context) *Application {
 	s := service.NewUserService(a.userStorage, a.config)
 
 	// Init routers
-	a.httpServer = http_router.NewRouter(a.logger, a.config, s)
+	a.httpServer = http_router.NewRouter(a.logger, a.config, s, a.tracerProvider.Tracer("user tracer"))
 	a.grpcServer = grpc_server.NewGrpcServer(a.logger, a.config, s)
 
 	return a
@@ -88,6 +107,11 @@ func (a *Application) Start(group *errgroup.Group) {
 		a.logger.Println("closing database...")
 		a.userStorage.Close()
 		return nil
+	})
+	group.Go(func() error {
+		<-a.ctx.Done()
+		a.logger.Println("closing jaeger connection...")
+		return a.tracerProvider.Shutdown(context.Background())
 	})
 }
 

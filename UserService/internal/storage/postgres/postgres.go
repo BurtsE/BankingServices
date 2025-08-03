@@ -4,24 +4,51 @@ import (
 	"UserService/internal/config"
 	"context"
 	"fmt"
+
+	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"golang.org/x/crypto/openpgp/packet"
 )
 
 type PostgresRepository struct {
-	config *packet.Config
-	pool   *pgxpool.Pool
+	pool *pgxpool.Pool
 }
 
 func NewPostgresRepository(ctx context.Context, cfg *config.Config) (*PostgresRepository, error) {
 	DSN := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Postgres.Host, cfg.Postgres.Username, cfg.Postgres.Password, cfg.Postgres.Database)
-	pool, err := pgxpool.New(ctx, DSN)
+
+	pgxConfig, err := pgxpool.ParseConfig(DSN)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create connection pool: %w", err)
 	}
+
+	tracerConfig := cfg.PostgresTracing
+	if tracerConfig.EnableTracing {
+		tracingOpts := []otelpgx.Option{}
+		if !tracerConfig.IncludeConnectionDetails {
+			tracingOpts = append(tracingOpts, otelpgx.WithDisableConnectionDetailsInAttributes())
+		}
+
+		if !tracerConfig.IncludeQueryPrefix {
+			tracingOpts = append(tracingOpts, otelpgx.WithDisableQuerySpanNamePrefix())
+		}
+
+		if !tracerConfig.IncludeSqlStatements {
+			tracingOpts = append(tracingOpts, otelpgx.WithDisableSQLStatementInAttributes())
+		}
+
+		pgxConfig.ConnConfig.Tracer = otelpgx.NewTracer(
+			tracingOpts...,
+		)
+	}
+
+	pool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
+	if err != nil {
+		return nil, fmt.Errorf("create connection pool: %w", err)
+	}
+
 	if err = pool.Ping(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create connection pool: %w", err)
 	}
 
 	repo := &PostgresRepository{
@@ -29,6 +56,10 @@ func NewPostgresRepository(ctx context.Context, cfg *config.Config) (*PostgresRe
 	}
 
 	return repo, nil
+}
+
+func (p *PostgresRepository) Pool() *pgxpool.Pool {
+	return p.pool
 }
 
 func (p *PostgresRepository) Close() {

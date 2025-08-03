@@ -7,17 +7,20 @@ import (
 	"gateway/internal/service"
 	"gateway/pkg/metrics"
 	"gateway/pkg/middleware"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
+	"go.opentelemetry.io/otel/trace"
 )
 
-const ROUTER_PREFIX = "/api/v1"
+const RouterPrefix = "/api/v1"
 
-const caching_duration = time.Hour * 1
+const cachingDuration = time.Hour * 1
 
 const (
 	user_prefix    = "user"
@@ -34,18 +37,20 @@ type Router struct {
 	mapping     map[string]*url.URL
 	tokenCache  cache.Cache
 	metrics     *metrics.Metrics
+	tracer      trace.Tracer
 }
 
 func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, userService service.IUserService,
-	metrics *metrics.Metrics) *Router {
+	metrics *metrics.Metrics, tracer trace.Tracer) *Router {
 
 	rtr := &Router{
 		logger:      logger,
 		tokenCache:  cache,
 		userService: userService,
+		tracer:      tracer,
 	}
 
-	muxRouter := mux.NewRouter().PathPrefix(ROUTER_PREFIX).Subrouter()
+	muxRouter := mux.NewRouter().PathPrefix(RouterPrefix).Subrouter()
 
 	rtr.srv = &http.Server{
 		Handler:      muxRouter,
@@ -73,6 +78,7 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 	muxRouter.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) }))
 
 	// add middleware
+	muxRouter.Use(otelmux.Middleware("Gateway"))
 	muxRouter.Use(middleware.NewLoggerMiddleware(logger))
 	muxRouter.Use(middleware.NewPanicMiddleware(logger))
 

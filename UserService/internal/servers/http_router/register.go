@@ -3,6 +3,9 @@ package http_router
 import (
 	"encoding/json"
 	"net/http"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type registerRequest struct {
@@ -13,6 +16,13 @@ type registerRequest struct {
 }
 
 func (r *Router) registerUserHandler(w http.ResponseWriter, req *http.Request) {
+
+	propagator := otel.GetTextMapPropagator()
+	reqCtx := propagator.Extract(req.Context(), propagation.HeaderCarrier(req.Header))
+
+	ctx, span := r.tracer.Start(reqCtx, "register handler")
+	defer span.End()
+
 	var reqBody registerRequest
 	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
 		r.logger.Debugf("cannot decode request body: %v", err)
@@ -26,7 +36,6 @@ func (r *Router) registerUserHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ctx := req.Context()
 	user, err := r.service.Register(ctx, reqBody.Email, reqBody.Username, reqBody.Password, reqBody.FullName)
 	if err != nil {
 		r.logger.WithError(err).Error("failed to register user")

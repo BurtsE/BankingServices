@@ -9,14 +9,15 @@ import (
 	"gateway/internal/router"
 	"gateway/internal/service/user_service"
 	"gateway/pkg/metrics"
+	"gateway/pkg/tracing"
+	"os"
+	"os/signal"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
-	"os"
-	"os/signal"
 
 	"syscall"
 )
@@ -44,6 +45,13 @@ func main() {
 		logger.SetLevel(logrus.DebugLevel)
 	}
 
+	// initializing jaeger tracer (global), http router should use middleware
+	jaegerURL := config.GetJaegerUrl()
+	tracerProvider, err := tracing.InitTracer(jaegerURL, "Gateway service")
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	// connecting to redis
 	logger.Printf("connecting to redis with address %s:%s", cfg.Redis.Host, cfg.Redis.Port)
 	cache, err := redis.NewRedisCache(cfg)
@@ -56,7 +64,7 @@ func main() {
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	conn, err := grpc.NewClient(config.GetUserServiceGrpcURI(), opts...)
 	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
+		logger.Fatalf("fail to dial: %v", err)
 	}
 
 	client := protobuf.NewUserServiceClient(conn)
@@ -67,7 +75,7 @@ func main() {
 	m := metrics.NewMetrics(registry)
 
 	// initializing http router
-	rtr := router.NewRouter(cfg, logger, cache, userService, m)
+	rtr := router.NewRouter(cfg, logger, cache, userService, m, tracerProvider.Tracer("gateway tracer name"))
 
 	// initializing metric routes
 	metricServer := metrics_server.NewMetricsServer(registry)
@@ -101,6 +109,12 @@ func main() {
 		<-gCtx.Done()
 		logger.Println("closing metric server...")
 		return metricServer.Stop(gCtx)
+	})
+
+	errG.Go(func() error {
+		<-gCtx.Done()
+		logger.Println("closing jaeger connection...")
+		return tracerProvider.Shutdown(context.Background())
 	})
 
 	errG.Go(func() error {

@@ -8,5 +8,11 @@
     "username": "user_dbuser",
     "password": "user_dbpass",
     "database": "user_dbname"
+  },
+  "postgres_tracing": {
+      "enable_tracing": true,
+      "include_connection_details": false,
+      "include_sql_statements": false,
+      "include_query_prefix": false
   }
 }

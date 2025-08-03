@@ -8,7 +8,7 @@ import (
 )
 
 func (r *Router) director(req *http.Request) {
-	route, _ := strings.CutPrefix(req.URL.Path, ROUTER_PREFIX)
+	route, _ := strings.CutPrefix(req.URL.Path, RouterPrefix)
 	parts := strings.Split(route, "/")
 	uri := r.mapping[parts[1]]
 
