@@ -7,7 +7,6 @@ import (
 
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go.opentelemetry.io/otel/metric"
 )
 
 type PostgresRepository struct {
@@ -23,7 +22,25 @@ func NewPostgresRepository(ctx context.Context, cfg *config.Config) (*PostgresRe
 		return nil, fmt.Errorf("create connection pool: %w", err)
 	}
 
-	pgxConfig.ConnConfig.Tracer = otelpgx.NewTracer(otelpgx.WithDisableConnectionDetailsInAttributes())
+	tracerConfig := cfg.PostgresTracing
+	if tracerConfig.EnableTracing {
+		tracingOpts := []otelpgx.Option{}
+		if !tracerConfig.IncludeConnectionDetails {
+			tracingOpts = append(tracingOpts, otelpgx.WithDisableConnectionDetailsInAttributes())
+		}
+
+		if !tracerConfig.IncludeQueryPrefix {
+			tracingOpts = append(tracingOpts, otelpgx.WithDisableQuerySpanNamePrefix())
+		}
+
+		if !tracerConfig.IncludeSqlStatements {
+			tracingOpts = append(tracingOpts, otelpgx.WithDisableSQLStatementInAttributes())
+		}
+
+		pgxConfig.ConnConfig.Tracer = otelpgx.NewTracer(
+			tracingOpts...,
+		)
+	}
 
 	pool, err := pgxpool.NewWithConfig(ctx, pgxConfig)
 	if err != nil {
