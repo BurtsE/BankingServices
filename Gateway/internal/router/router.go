@@ -8,10 +8,9 @@ import (
 	"gateway/pkg/metrics"
 	"gateway/pkg/middleware"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"time"
 
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
@@ -22,32 +21,29 @@ const RouterPrefix = "/api/v1"
 
 const cachingDuration = time.Hour * 1
 
-const (
-	user_prefix    = "user"
-	banking_prefix = "account"
-	cards_prefix   = "card"
-)
-
 type Router struct {
 	logger *logrus.Logger
-	proxy  *httputil.ReverseProxy
 	srv    *http.Server
+	cfg    *config.Config
 
-	userService service.IUserService
-	mapping     map[string]*url.URL
-	tokenCache  cache.Cache
-	metrics     *metrics.Metrics
-	tracer      trace.Tracer
+	userService     service.IUserService
+	tokenCache      cache.Cache
+	messageProducer *kafka.Producer
+
+	metrics *metrics.Metrics
+	tracer  trace.Tracer
 }
 
 func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, userService service.IUserService,
-	metrics *metrics.Metrics, tracer trace.Tracer) *Router {
+	metrics *metrics.Metrics, tracer trace.Tracer, kafkaProducer *kafka.Producer) *Router {
 
 	rtr := &Router{
-		logger:      logger,
-		tokenCache:  cache,
-		userService: userService,
-		tracer:      tracer,
+		logger:          logger,
+		cfg:             cfg,
+		tokenCache:      cache,
+		messageProducer: kafkaProducer,
+		userService:     userService,
+		tracer:          tracer,
 	}
 
 	muxRouter := mux.NewRouter().PathPrefix(RouterPrefix).Subrouter()
@@ -59,22 +55,22 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 		ReadTimeout:  15 * time.Second,
 	}
 
-	proxy := &httputil.ReverseProxy{
-		Director:       rtr.director,
-		ErrorHandler:   rtr.errorHandler,
-		ModifyResponse: rtr.modifyResponse,
-	}
-
-	rtr.proxy = proxy
-	rtr.InitServiceMapping()
-
 	// Setup prometheus metrics
 	rtr.metrics = metrics
 
-	// register proxy handlers
-	muxRouter.HandleFunc("/user/{*}", rtr.UserServiceHandler)
-	muxRouter.HandleFunc("/account/{*}", rtr.BankingServiceHandler).Methods("GET", "POST")
-	muxRouter.HandleFunc("/card/{*}", rtr.BankingServiceHandler).Methods("GET", "POST")
+	// register handlers
+	// muxRouter.HandleFunc("/user/register", rtr.UserRegisterHandler).Methods("POST")
+	// muxRouter.HandleFunc("/user/login", rtr.UserLoginHandler).Methods("POST")
+
+	// muxRouter.HandleFunc("/account/create", rtr.AccountCreationHandler).Methods("POST")
+	// muxRouter.HandleFunc("/account/deposit", rtr.AccountDepositHandler).Methods("POST")
+	// muxRouter.HandleFunc("/account/withdraw", rtr.AccountWithdrawHandler).Methods("POST")
+	// muxRouter.HandleFunc("/account/transfer", rtr.AccountTransferHandler).Methods("POST")
+
+	// muxRouter.HandleFunc("/card/show/{accountId}", rtr.ShowCardHandler).Methods("GET")
+	// muxRouter.HandleFunc("/card/issue", rtr.IssueCardHandler).Methods("POST")
+	// muxRouter.HandleFunc("/card/block", rtr.BlockCardHandler).Methods("POST")
+
 	muxRouter.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("pong")) }))
 
 	// add middleware
@@ -83,28 +79,6 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 	muxRouter.Use(middleware.NewPanicMiddleware(logger))
 
 	return rtr
-}
-
-func (r *Router) InitServiceMapping() {
-	r.mapping = make(map[string]*url.URL)
-
-	uri, err := url.Parse(config.GetUserServiceHttpURI())
-	if err != nil {
-		r.logger.Fatal(err)
-	}
-	r.mapping[user_prefix] = uri
-
-	uri, err = url.Parse(config.GetBankingServiceURI())
-	if err != nil {
-		r.logger.Fatal(err)
-	}
-	r.mapping[banking_prefix] = uri
-
-	uri, err = url.Parse(config.GetCardServiceURI())
-	if err != nil {
-		r.logger.Fatal(err)
-	}
-	r.mapping[cards_prefix] = uri
 }
 
 func (r *Router) Start() error {
