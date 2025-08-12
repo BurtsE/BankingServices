@@ -1,12 +1,12 @@
 package domain
 
-var CreateUserEvent = &createUserEvent{}
+var CreateUserEvent = &createUserRequestEvent{}
 
-type createUserEvent struct {
+type createUserRequestEvent struct {
 }
 
-func (c *createUserEvent) isEventType() {}
+func (c *createUserRequestEvent) isEventType() {}
 
-func (c *createUserEvent) Value() string {
+func (c *createUserRequestEvent) Type() string {
 	return "create_user"
 }
