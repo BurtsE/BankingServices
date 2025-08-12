@@ -10,6 +10,7 @@ type Config struct {
 	ServerPort string `json:"port" yaml:"port"`
 	LogLevel   string `json:"log_level" yaml:"log_level"`
 	Redis      `json:"redis" yaml:"redis"`
+	ClickHouse `json:"clickhouse" yaml" "clickhouse"`
 }
 
 type Redis struct {
@@ -17,6 +18,13 @@ type Redis struct {
 	Port     string `json:"port" yaml:"port"`
 	Password string `json:"password" yaml:"password"`
 	Database int    `json:"database" yaml:"database"`
+}
+
+type ClickHouse struct {
+	Address  string
+	Database string `json:"database" yaml:"database"`
+	Username string `json:"username" yaml:"username"`
+	Password string `json:"password" yaml:"password"`
 }
 
 func InitConfig() (*Config, error) {
