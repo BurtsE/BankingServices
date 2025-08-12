@@ -8,7 +8,7 @@ import (
 	"gateway/internal/storage"
 )
 
-func (c *ClickHouseStorage) AddEvent(ctx context.Context, events []domain.Event) error {
+func (c *ClickHouseStorage) AddEvent(ctx context.Context, events []domain.EventRequest) error {
 	query := prepareQueryStatement(events)
 	args := prepareQueryArgs(events)
 	err := c.conn.Exec(ctx, query, args...)
@@ -18,7 +18,7 @@ func (c *ClickHouseStorage) AddEvent(ctx context.Context, events []domain.Event)
 	return nil
 }
 
-func prepareQueryStatement(events []domain.Event) string {
+func prepareQueryStatement(events []domain.EventRequest) string {
 	buf := bytes.NewBuffer([]byte("INSERT INTO events (uuid, value) VALUES "))
 	counter := 1
 	for range events {
