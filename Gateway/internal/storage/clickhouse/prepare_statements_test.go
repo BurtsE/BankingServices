@@ -11,17 +11,17 @@ import (
 func TestPrepareQueryStatements(t *testing.T) {
 	tests := []struct {
 		name   string
-		events []domain.Event
+		events []domain.EventRequest
 		result string
 	}{
 		{
 			name:   "empty slice",
-			events: []domain.Event{},
+			events: []domain.EventRequest{},
 			result: "INSERT INTO events (uuid, value) VALUES",
 		},
 		{
 			name: "single event",
-			events: []domain.Event{
+			events: []domain.EventRequest{
 				{
 					EventType: domain.CreateUserEvent,
 				},
@@ -30,7 +30,7 @@ func TestPrepareQueryStatements(t *testing.T) {
 		},
 		{
 			name: "multiple events",
-			events: []domain.Event{
+			events: []domain.EventRequest{
 				{
 					EventType: domain.CreateUserEvent,
 				},
@@ -51,28 +51,28 @@ func TestPrepareQueryStatements(t *testing.T) {
 func TestPrepareQueryArgs(t *testing.T) {
 	tests := []struct {
 		name   string
-		events []domain.Event
+		events []domain.EventRequest
 		result []any
 	}{
 		{
 			name:   "empty slice",
-			events: []domain.Event{},
+			events: []domain.EventRequest{},
 			result: []any{},
 		},
 		{
 			name: "single event",
-			events: []domain.Event{
+			events: []domain.EventRequest{
 				{
 					EventType: domain.CreateUserEvent,
 				},
 			},
 			result: []any{
-				any(uuid.UUID{}), domain.CreateUserEvent.Value(),
+				any(uuid.UUID{}), domain.CreateUserEvent.Type(),
 			},
 		},
 		{
 			name: "multiple events",
-			events: []domain.Event{
+			events: []domain.EventRequest{
 				{
 					EventType: domain.CreateUserEvent,
 				},
@@ -81,8 +81,8 @@ func TestPrepareQueryArgs(t *testing.T) {
 				},
 			},
 			result: []any{
-				any(uuid.UUID{}), domain.CreateUserEvent.Value(),
-				any(uuid.UUID{}), domain.CreateUserEvent.Value(),
+				any(uuid.UUID{}), domain.CreateUserEvent.Type(),
+				any(uuid.UUID{}), domain.CreateUserEvent.Type(),
 			},
 		},
 	}
@@ -104,12 +104,12 @@ func TestPrepareQueryArgs(t *testing.T) {
 func TestPrepareQueryArgsFail(t *testing.T) {
 	tests := []struct {
 		name   string
-		events []domain.Event
+		events []domain.EventRequest
 		result []any
 	}{
 		{
 			name: "single event",
-			events: []domain.Event{
+			events: []domain.EventRequest{
 				{
 					EventType: domain.CreateUserEvent,
 				},
@@ -120,7 +120,7 @@ func TestPrepareQueryArgsFail(t *testing.T) {
 		},
 		{
 			name: "multiple events",
-			events: []domain.Event{
+			events: []domain.EventRequest{
 				{
 					EventType: domain.CreateUserEvent,
 				},
