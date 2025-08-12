@@ -29,10 +29,10 @@ func prepareQueryStatement(events []domain.EventRequest) string {
 	return buf.String()
 }
 
-func prepareQueryArgs(events []domain.Event) []any {
+func prepareQueryArgs(events []domain.EventRequest) []any {
 	args := make([]any, 0)
 	for i := range events {
-		args = append(args, events[i].ID(), events[i].EventType.Value())
+		args = append(args, events[i].ID(), events[i].EventType.Type())
 	}
 	return args
 }
