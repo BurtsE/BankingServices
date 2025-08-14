@@ -9,7 +9,7 @@ import (
 type EventRequest struct {
 	id        uuid.UUID
 	createdAt time.Time
-	EventStatus
+	data      []byte
 	EventType
 }
 
@@ -17,10 +17,20 @@ func (e *EventRequest) ID() uuid.UUID {
 	return e.id
 }
 
-func NewEventRequest(value string) (EventRequest, error) {
+func (e *EventRequest) CreatedAt() time.Time {
+	return e.createdAt
+}
+
+func (e *EventRequest) Data() []byte {
+	return e.data
+}
+
+func NewEventRequest(data []byte, eventType string) (EventRequest, error) {
 	e := EventRequest{}
 	e.id = uuid.New()
-	switch value {
+	e.createdAt = time.Now()
+	e.data = data
+	switch eventType {
 	case "create_user":
 		e.EventType = CreateUserEvent
 	default:

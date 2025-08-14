@@ -28,20 +28,18 @@ type Router struct {
 
 	userService     service.IUserService
 	tokenCache      cache.Cache
-	messageProducer *kafka.Producer
 
 	metrics *metrics.Metrics
 	tracer  trace.Tracer
 }
 
 func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, userService service.IUserService,
-	metrics *metrics.Metrics, tracer trace.Tracer, kafkaProducer *kafka.Producer) *Router {
+	metrics *metrics.Metrics, tracer trace.Tracer) *Router {
 
 	rtr := &Router{
 		logger:          logger,
 		cfg:             cfg,
 		tokenCache:      cache,
-		messageProducer: kafkaProducer,
 		userService:     userService,
 		tracer:          tracer,
 	}

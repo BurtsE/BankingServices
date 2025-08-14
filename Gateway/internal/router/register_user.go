@@ -1,6 +1,7 @@
 package router
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 )
@@ -25,7 +26,8 @@ func (r *Router) RegisterUserHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-
+	userInfo := bytes.NewBuffer([]byte{})
+	_ = json.NewEncoder(userInfo).Encode(reqBody)
 	
 
 }
