@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
@@ -26,8 +25,9 @@ type Router struct {
 	srv    *http.Server
 	cfg    *config.Config
 
-	userService     service.IUserService
-	tokenCache      cache.Cache
+	userService    service.IUserService
+	requestService service.EventService
+	tokenCache     cache.Cache
 
 	metrics *metrics.Metrics
 	tracer  trace.Tracer
@@ -37,11 +37,11 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 	metrics *metrics.Metrics, tracer trace.Tracer) *Router {
 
 	rtr := &Router{
-		logger:          logger,
-		cfg:             cfg,
-		tokenCache:      cache,
-		userService:     userService,
-		tracer:          tracer,
+		logger:      logger,
+		cfg:         cfg,
+		tokenCache:  cache,
+		userService: userService,
+		tracer:      tracer,
 	}
 
 	muxRouter := mux.NewRouter().PathPrefix(RouterPrefix).Subrouter()

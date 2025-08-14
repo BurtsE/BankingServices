@@ -42,6 +42,8 @@ func NewRequestService(logger *logrus.Logger, storage storage.EventStorage) *Req
 		storage:     storage,
 		requestChan: make(chan domain.EventRequest, batchSize),
 		pool:        make([]domain.EventRequest, 0, batchSize),
+		ctx:         context.Background(),
+		cancelFunc:  func() {},
 	}
 }
 
