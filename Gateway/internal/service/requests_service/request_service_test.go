@@ -55,4 +55,6 @@ func TestRequestService(t *testing.T) {
 	wg.Wait()
 	time.Sleep(time.Second)
 	service.Stop()
+	err := service.AddEvent(ctx, domain.EventRequest{})
+	assert.Equal(t, err, ErrConnectionClosed, "should not accept new events")
 }
