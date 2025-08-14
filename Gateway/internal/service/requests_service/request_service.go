@@ -41,7 +41,7 @@ func NewRequestService(logger *logrus.Logger, storage storage.EventStorage) *Req
 		logger:      logger,
 		storage:     storage,
 		requestChan: make(chan domain.EventRequest, batchSize),
-		pool:        make([]domain.EventRequest, batchSize),
+		pool:        make([]domain.EventRequest, 0, batchSize),
 	}
 }
 
@@ -64,11 +64,16 @@ func (r *RequestService) Start(ctx context.Context) {
 				continue
 			}
 		case <-ticker.C:
+			if len(r.pool) == 0 {
+				continue
+			}
 		}
 		err := r.storage.AddEvents(ctx, r.pool)
 		if err != nil {
 			r.logger.Errorf("error adding events to database: %v: %v", err, r.pool)
 		}
+		r.logger.Debugf("added %d events to db", len(r.pool))
+		r.pool = r.pool[:0]
 	}
 }
 
