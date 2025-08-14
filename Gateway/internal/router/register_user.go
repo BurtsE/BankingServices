@@ -1,0 +1,31 @@
+package router
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type registerRequest struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	FullName string `json:"full_name"`
+}
+
+func (r *Router) RegisterUserHandler(w http.ResponseWriter, req *http.Request) {
+	var reqBody registerRequest
+	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
+		r.logger.Debugf("cannot decode request body: %v", err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if reqBody.Email == "" || reqBody.Username == "" || reqBody.Password == "" || reqBody.FullName == "" {
+		r.logger.Debugf("insufficient request body: %v", reqBody)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	
+
+}

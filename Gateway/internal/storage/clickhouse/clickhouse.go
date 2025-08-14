@@ -61,5 +61,6 @@ func connect(cfg *config.Config) (driver.Conn, error) {
 		}
 		return nil, err
 	}
+
 	return conn, nil
 }
