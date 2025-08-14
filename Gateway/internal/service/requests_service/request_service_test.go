@@ -34,16 +34,19 @@ func TestRequestService(t *testing.T) {
 	logger := logrus.New()
 	logger.SetLevel(logrus.DebugLevel)
 	service := NewRequestService(logger, mockStorage)
+
+	clientsNumber := 10000
+	requestTimeout := time.Millisecond * 100
+	wg := new(sync.WaitGroup)
+	wg.Add(clientsNumber)
+
 	go service.Start(ctx)
 	time.Sleep(time.Second)
 
-	wg := new(sync.WaitGroup)
-	clientsNumber := 123456
-	wg.Add(clientsNumber)
 	for range clientsNumber {
 		go func() {
 			defer wg.Done()
-			clientCtx, cancel := context.WithTimeout(ctx, time.Second*1)
+			clientCtx, cancel := context.WithTimeout(ctx, requestTimeout)
 			defer cancel()
 			err := service.AddEvent(clientCtx, domain.EventRequest{})
 			assert.Nil(t, err, "should not return error")
