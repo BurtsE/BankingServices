@@ -35,7 +35,12 @@ func (r *Router) RegisterUserHandler(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Could not create user", http.StatusInternalServerError)
 		return
 	}
-	r.requestService.AddEvent(req.Context(), event)
+	err = r.requestService.AddEvent(req.Context(), event)
+	if err != nil {
+		r.logger.Errorf("could not process event: %v", err)
+		http.Error(w, "Could not create user", http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(ResponceBody{EventId: event.ID().String()})
