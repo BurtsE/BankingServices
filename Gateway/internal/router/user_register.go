@@ -19,7 +19,6 @@ type registerRequest struct {
 
 func (r *Router) RegisterUserHandler(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
-
 	defer func() {
 		r.metrics.Duration.WithLabelValues(RegisterUserLabel).Observe(time.Since(start).Seconds())
 	}()

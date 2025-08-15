@@ -15,7 +15,6 @@ type loginRequest struct {
 
 func (r *Router) UserLoginHandler(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
-
 	defer func() {
 		r.metrics.Duration.WithLabelValues(LoginUserLabel).Observe(time.Since(start).Seconds())
 	}()
@@ -34,5 +33,5 @@ func (r *Router) UserLoginHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Send request to user service
+	// TODO Send request to user service
 }
