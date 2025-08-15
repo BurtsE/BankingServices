@@ -33,6 +33,10 @@ func NewEventRequest(data []byte, eventType string) (EventRequest, error) {
 	switch eventType {
 	case "create_user":
 		e.EventType = CreateUserEvent
+	case "create_account":
+		e.EventType = CreateAccountEvent
+	case "deposit_account":
+		e.EventType = DepositAccountEvent
 	default:
 		return EventRequest{}, ErrInvalidEventType
 	}
