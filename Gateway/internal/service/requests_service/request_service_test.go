@@ -21,11 +21,6 @@ func (m *mockStorage) AddEvents(ctx context.Context, events []domain.EventReques
 	return args.Error(0)
 }
 
-func (m *mockStorage) GetUnprocessedEvents() ([]domain.EventRequest, error) {
-	args := m.Called()
-	return args.Get(0).([]domain.EventRequest), args.Error(1)
-}
-
 func TestRequestService(t *testing.T) {
 	ctx := context.Background()
 	mockStorage := &mockStorage{}

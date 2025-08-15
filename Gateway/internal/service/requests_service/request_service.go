@@ -29,14 +29,14 @@ New events will not be accepted.
 */
 type RequestService struct {
 	logger      *logrus.Logger
-	storage     storage.EventStorage
+	storage     storage.EventStorageWriter
 	requestChan chan domain.EventRequest
 	pool        []domain.EventRequest
 	ctx         context.Context
 	cancelFunc  context.CancelFunc
 }
 
-func NewRequestService(logger *logrus.Logger, storage storage.EventStorage) *RequestService {
+func NewRequestService(logger *logrus.Logger, storage storage.EventStorageWriter) *RequestService {
 	return &RequestService{
 		logger:      logger,
 		storage:     storage,

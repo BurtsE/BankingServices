@@ -8,7 +8,10 @@ import (
 
 var ErrInsertDatabase = fmt.Errorf("error inserting into database")
 
-type EventStorage interface {
+type EventStorageWriter interface {
 	AddEvents(context.Context, []domain.EventRequest) error
+}
+
+type EventStorageReader interface {
 	GetUnprocessedEvents() ([]domain.EventRequest, error)
 }
