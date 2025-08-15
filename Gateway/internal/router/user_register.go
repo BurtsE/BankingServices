@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"gateway/internal/domain"
 	"net/http"
+	"time"
 )
+
+const RegisterUserLabel = "User registry"
 
 type registerRequest struct {
 	Email    string `json:"email"`
@@ -15,6 +18,13 @@ type registerRequest struct {
 }
 
 func (r *Router) RegisterUserHandler(w http.ResponseWriter, req *http.Request) {
+	start := time.Now()
+
+	defer func() {
+		r.metrics.Duration.WithLabelValues(RegisterUserLabel).Observe(time.Since(start).Seconds())
+	}()
+	r.metrics.Requests.WithLabelValues(RegisterUserLabel).Inc()
+
 	var reqBody registerRequest
 	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
 		r.logger.Debugf("cannot decode request body: %v", err)

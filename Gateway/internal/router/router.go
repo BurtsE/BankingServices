@@ -59,7 +59,7 @@ func NewRouter(cfg *config.Config, logger *logrus.Logger, cache cache.Cache, use
 	// register user handlers
 	muxRouter.HandleFunc("/user/register", rtr.RegisterUserHandler).Methods("POST")
 
-	// muxRouter.HandleFunc("/user/login", rtr.UserLoginHandler).Methods("POST")
+	muxRouter.HandleFunc("/user/login", rtr.UserLoginHandler).Methods("POST")
 
 	// register account handlers
 	// muxRouter.HandleFunc("/account/create", rtr.AccountCreationHandler).Methods("POST")
