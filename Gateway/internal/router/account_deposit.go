@@ -6,6 +6,8 @@ import (
 	"gateway/internal/domain"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const DepositAccountLabel = "User registry"
@@ -39,7 +41,7 @@ func (r *Router) AccountDepositHandler(w http.ResponseWriter, req *http.Request)
 	depositInfo := bytes.NewBuffer([]byte{})
 	_ = json.NewEncoder(depositInfo).Encode(reqBody)
 
-	event, err := domain.NewEventRequest(depositInfo.Bytes(), "deposit_account")
+	event, err := domain.NewEventRequest(uuid.New(), time.Now(), depositInfo.Bytes(), "deposit_account")
 	if err != nil {
 		http.Error(w, "Could not create account", http.StatusInternalServerError)
 		return

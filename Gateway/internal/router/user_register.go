@@ -6,6 +6,8 @@ import (
 	"gateway/internal/domain"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const RegisterUserLabel = "User registry"
@@ -39,7 +41,7 @@ func (r *Router) RegisterUserHandler(w http.ResponseWriter, req *http.Request) {
 	userInfo := bytes.NewBuffer([]byte{})
 	_ = json.NewEncoder(userInfo).Encode(reqBody)
 
-	event, err := domain.NewEventRequest(userInfo.Bytes(), "create_user")
+	event, err := domain.NewEventRequest(uuid.New(), time.Now(), userInfo.Bytes(), "create_user")
 	if err != nil {
 		http.Error(w, "Could not create user", http.StatusInternalServerError)
 		return

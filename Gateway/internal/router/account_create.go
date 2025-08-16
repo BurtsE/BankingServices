@@ -6,6 +6,8 @@ import (
 	"gateway/internal/domain"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const CreateAccountLabel = "User registry"
@@ -40,7 +42,7 @@ func (r *Router) AccountCreationHandler(w http.ResponseWriter, req *http.Request
 	accountInfo := bytes.NewBuffer([]byte{})
 	_ = json.NewEncoder(accountInfo).Encode(reqBody)
 
-	event, err := domain.NewEventRequest(accountInfo.Bytes(), "create_account")
+	event, err := domain.NewEventRequest(uuid.New(), time.Now(), accountInfo.Bytes(), "create_account")
 	if err != nil {
 		http.Error(w, "Could not create account", http.StatusInternalServerError)
 		return

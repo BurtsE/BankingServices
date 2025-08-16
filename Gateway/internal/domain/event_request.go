@@ -25,10 +25,10 @@ func (e *EventRequest) Data() []byte {
 	return e.data
 }
 
-func NewEventRequest(data []byte, eventType string) (EventRequest, error) {
+func NewEventRequest(id uuid.UUID, createdAt time.Time, data []byte, eventType string) (EventRequest, error) {
 	e := EventRequest{}
-	e.id = uuid.New()
-	e.createdAt = time.Now()
+	e.id = id
+	e.createdAt = createdAt
 	e.data = data
 	switch eventType {
 	case "create_user":
