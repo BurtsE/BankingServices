@@ -13,5 +13,5 @@ type EventStorageWriter interface {
 }
 
 type EventStorageReader interface {
-	GetUnprocessedEvents() ([]domain.EventRequest, error)
+	GetUnprocessedEvents(context.Context) ([]domain.EventRequest, error)
 }
