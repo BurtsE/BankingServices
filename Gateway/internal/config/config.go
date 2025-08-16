@@ -10,7 +10,8 @@ type Config struct {
 	ServerPort string `json:"port" yaml:"port"`
 	LogLevel   string `json:"log_level" yaml:"log_level"`
 	Redis      `json:"redis" yaml:"redis"`
-	ClickHouse `json:"clickhouse" yaml" "clickhouse"`
+	ClickHouse `json:"clickhouse" yaml:"clickhouse"`
+	Kafka      `json:"kafka" yaml:"kafka"`
 }
 
 type Redis struct {
@@ -25,6 +26,14 @@ type ClickHouse struct {
 	Database string `json:"database" yaml:"database"`
 	Username string `json:"username" yaml:"username"`
 	Password string `json:"password" yaml:"password"`
+}
+
+type Kafka struct {
+	Address      string `json:"address" yaml:"address"`
+	UserTopic    string `json:"user_topic" yaml:"user_topic"`
+	AccountTopic string `json:"account_topic" yaml:"account_topic"`
+	CardTopic    string `json:"card_topic" yaml:"card_topic"`
+	Group        string `json:"group" yaml:"group"`
 }
 
 func InitConfig() (*Config, error) {
