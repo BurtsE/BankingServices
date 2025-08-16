@@ -13,7 +13,7 @@ func (c *ClickHouseStorage) GetUnprocessedEvents(ctx context.Context) ([]domain.
 	query := `
 		SELECT uuid, event_type, data, created_at
 		FROM(
-			SELECT uuid, event_type, data, created_at, rowNUmber() OVER ()(
+			SELECT uuid, event_type, data, created_at, rowNumber() OVER ()(
 				PARTITION BY uuid
 				ORDER BY created_at DESC
 			) as rn
