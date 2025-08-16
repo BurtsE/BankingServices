@@ -12,10 +12,16 @@ import (
 func (c *ClickHouseStorage) GetUnprocessedEvents(ctx context.Context) ([]domain.EventRequest, error) {
 	query := `
 		SELECT uuid, event_type, data, created_at
-			FROM events
-			WHERE status = $1
+		FROM(
+			SELECT uuid, event_type, data, created_at, rowNUmber() OVER ()(
+				PARTITION BY uuid
+				ORDER BY created_at DESC
+			) as rn
+			FROM events	
+		)
+		WHERE rn = 1 AND status = $1
 	`
-	rows, err := c.conn.Query(ctx, query, domain.Fail.Status())
+	rows, err := c.conn.Query(ctx, query, domain.InProgress.Status())
 	if err != nil {
 		return nil, fmt.Errorf("failed to query unprocessed events: %w", err)
 	}
@@ -23,10 +29,12 @@ func (c *ClickHouseStorage) GetUnprocessedEvents(ctx context.Context) ([]domain.
 
 	var events []domain.EventRequest
 	for rows.Next() {
-		var id uuid.UUID
-		var eventType string
-		var data []byte
-		var createdAt time.Time
+		var (
+			id        uuid.UUID
+			eventType string
+			data      []byte
+			createdAt time.Time
+		)
 		if err := rows.Scan(&id, &eventType, &data, &createdAt); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
